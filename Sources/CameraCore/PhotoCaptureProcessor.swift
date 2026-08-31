@@ -45,20 +45,28 @@ final class PhotoCaptureProcessor: NSObject, AVCapturePhotoCaptureDelegate {
             throw PhotoCaptureError.invalidPhotoData
         }
 
-        let desiredRatio = size.width >= size.height
-            ? aspectRatio.landscapeValue
-            : aspectRatio.portraitValue
-        let currentRatio = size.width / size.height
-        let cropRect: CGRect
-        if currentRatio > desiredRatio {
-            let width = size.height * desiredRatio
-            cropRect = CGRect(x: (size.width - width) / 2, y: 0, width: width, height: size.height)
-        } else {
-            let height = size.width / desiredRatio
-            cropRect = CGRect(x: 0, y: (size.height - height) / 2, width: size.width, height: height)
+        let landscape = size.width >= size.height
+        let units: CGSize = switch (aspectRatio, landscape) {
+        case (.fourByThree, true):
+            CGSize(width: 4, height: 3)
+        case (.fourByThree, false):
+            CGSize(width: 3, height: 4)
+        case (.sixteenByNine, true):
+            CGSize(width: 16, height: 9)
+        case (.sixteenByNine, false):
+            CGSize(width: 9, height: 16)
         }
+        let scale = floor(min(size.width / units.width, size.height / units.height))
+        guard scale >= 1 else { throw PhotoCaptureError.cannotCropPhoto }
+        let cropSize = CGSize(width: units.width * scale, height: units.height * scale)
+        let cropRect = CGRect(
+            x: floor((size.width - cropSize.width) / 2),
+            y: floor((size.height - cropSize.height) / 2),
+            width: cropSize.width,
+            height: cropSize.height
+        )
 
-        guard let cgImage = normalized.cgImage?.cropping(to: cropRect.integral) else {
+        guard let cgImage = normalized.cgImage?.cropping(to: cropRect) else {
             throw PhotoCaptureError.cannotCropPhoto
         }
         return UIImage(cgImage: cgImage, scale: 1, orientation: .up)
