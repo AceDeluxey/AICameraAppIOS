@@ -51,7 +51,9 @@ struct CameraScreen: View {
             )
         }
     }
+}
 
+private extension CameraScreen {
     private func preview(in size: CGSize) -> some View {
         let width = size.width
         let height = min(size.height, width / camera.aspectRatio.portraitValue)
@@ -210,7 +212,9 @@ struct CameraScreen: View {
             .padding(.vertical, 9)
             .background(CameraDesign.overlayBackground, in: Capsule())
     }
+}
 
+private extension CameraScreen {
     @ViewBuilder
     private var lensControls: some View {
         if !camera.availableLenses.isEmpty {
