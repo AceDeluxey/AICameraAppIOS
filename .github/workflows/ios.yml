@@ -22,6 +22,11 @@ jobs:
       - name: Run SwiftLint
         run: swiftlint lint --strict
 
+      - name: Test model conversion tooling
+        run: |
+          python3 tools/test_convert_efficientdet.py
+          python3 -m py_compile tools/convert_efficientdet.py tools/test_convert_efficientdet.py
+
       - name: Generate Xcode project
         run: xcodegen generate
 

@@ -2,6 +2,10 @@
 DerivedData/
 build/
 *.xcuserstate
+*.mlpackage/
+*.conversion.json
+.venv-model/
+__pycache__/
 xcuserdata/
 *.xccheckout
 *.moved-aside
