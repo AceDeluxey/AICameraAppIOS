@@ -188,7 +188,10 @@ private extension CameraScreen {
         } else if camera.thermalState == .critical {
             statusPill("设备温度过高，已降低 AI 频率")
         } else if camera.videoRecordingStatus != .idle {
-            videoMessage
+            VideoRecordingStatusView(
+                status: camera.videoRecordingStatus,
+                includesAudio: camera.isRecordingAudioEnabled
+            )
         } else if birdModeEnabled, let birdMessage {
             statusPill(birdMessage)
         } else {
@@ -225,30 +228,6 @@ private extension CameraScreen {
         }
     }
 
-    @ViewBuilder
-    private var videoMessage: some View {
-        switch camera.videoRecordingStatus {
-        case .preparing:
-            statusPill("正在准备录像")
-        case let .recording(startedAt):
-            TimelineView(.periodic(from: .now, by: 0.5)) { context in
-                statusPill(
-                    "● \(VideoRecordingDurationFormatter.text(from: startedAt, to: context.date))"
-                        + (camera.isRecordingAudioEnabled ? "" : " · 静音")
-                )
-                .foregroundStyle(.red)
-            }
-        case .saving:
-            statusPill("正在保存视频")
-        case .saved:
-            statusPill("视频已保存到照片")
-        case let .failed(message):
-            statusPill(message)
-        case .idle:
-            EmptyView()
-        }
-    }
-
     private func statusPill(_ message: String) -> some View {
         Text(message)
             .font(.subheadline)
@@ -260,25 +239,11 @@ private extension CameraScreen {
 
 private extension CameraScreen {
     private var captureModePicker: some View {
-        HStack(spacing: 0) {
-            ForEach(CameraCaptureMode.allCases, id: \.self) { mode in
-                Button(mode.displayName) {
-                    camera.setCaptureMode(mode)
-                }
-                .font(.subheadline.bold())
-                .foregroundStyle(camera.captureMode == mode ? .black : .white)
-                .frame(minWidth: 64, minHeight: 44)
-                .background(
-                    camera.captureMode == mode
-                        ? CameraDesign.accent : Color.clear,
-                    in: Capsule()
-                )
-                .accessibilityIdentifier("\(mode.rawValue)ModeButton")
-            }
-        }
-        .padding(3)
-        .background(CameraDesign.overlayBackground, in: Capsule())
-        .disabled(camera.videoRecordingStatus.isBusy)
+        CaptureModePicker(
+            selectedMode: camera.captureMode,
+            isDisabled: camera.videoRecordingStatus.isBusy,
+            selectMode: camera.setCaptureMode
+        )
     }
 
     @ViewBuilder
@@ -344,23 +309,13 @@ private extension CameraScreen {
 
             Spacer()
 
-            Button(action: captureAction, label: {
-                ZStack {
-                    Circle()
-                        .fill(shutterColor)
-                        .frame(width: 76, height: 76)
-                        .overlay(Circle().stroke(.white, lineWidth: 4))
-                    if camera.videoRecordingStatus.isRecording {
-                        RoundedRectangle(cornerRadius: 5)
-                            .fill(.white)
-                            .frame(width: 26, height: 26)
-                    }
-                }
-                .opacity(isShutterBusy ? 0.55 : 1)
-            })
-            .disabled(camera.state != .running || isShutterBusy)
-            .accessibilityLabel(shutterAccessibilityLabel)
-            .accessibilityIdentifier("shutterButton")
+            CaptureShutterButton(
+                mode: camera.captureMode,
+                recordingStatus: camera.videoRecordingStatus,
+                isBusy: isShutterBusy,
+                isDisabled: camera.state != .running || isShutterBusy,
+                action: captureAction
+            )
 
             Spacer()
 
@@ -380,10 +335,6 @@ private extension CameraScreen {
         }
     }
 
-    private var shutterColor: Color {
-        camera.captureMode == .video ? .red : CameraDesign.accent
-    }
-
     private var isShutterBusy: Bool {
         if camera.captureMode == .photo {
             return camera.captureStatus == .capturing
@@ -394,13 +345,6 @@ private extension CameraScreen {
         case .idle, .recording, .saved, .failed:
             false
         }
-    }
-
-    private var shutterAccessibilityLabel: String {
-        if camera.captureMode == .photo {
-            return "拍照"
-        }
-        return camera.videoRecordingStatus.isRecording ? "停止录像" : "开始录像"
     }
 
     private func captureAction() {

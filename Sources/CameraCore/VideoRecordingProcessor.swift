@@ -30,8 +30,7 @@ final class VideoRecordingProcessor: NSObject, AVCaptureFileOutputRecordingDeleg
         error: (any Error)?
     ) {
         if let error = error as NSError?,
-           error.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool != true
-        {
+           error.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool != true {
             completion(.failure(error))
         } else {
             completion(.success(outputFileURL))
