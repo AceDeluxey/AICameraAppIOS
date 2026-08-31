@@ -64,17 +64,32 @@ final class MainTargetSelectorTests: XCTestCase {
         XCTAssertNil(result.observation)
     }
 
-    func testLowConfidenceOrMissingTargetReturnsToSearching() {
+    func testLowConfidenceOrMissingTargetUsesTemporaryLossTolerance() {
         var tracker = MainTargetTracker()
         _ = tracker.update(with: [makeObservation(confidence: 0.8)])
 
         let lowConfidence = tracker.update(with: [makeObservation(confidence: 0.2)])
-        XCTAssertEqual(lowConfidence.state, .searching)
-        XCTAssertNil(lowConfidence.observation)
-        XCTAssertNil(lowConfidence.focusPoint)
+        XCTAssertEqual(lowConfidence.state, .temporarilyLost(currentFrame: 1, toleratedFrames: 2))
+        XCTAssertNotNil(lowConfidence.observation)
+        XCTAssertNotNil(lowConfidence.focusPoint)
 
-        let missing = tracker.update(with: [])
-        XCTAssertEqual(missing.state, .searching)
+        XCTAssertEqual(
+            tracker.update(with: []).state,
+            .temporarilyLost(currentFrame: 2, toleratedFrames: 2)
+        )
+        XCTAssertEqual(tracker.update(with: []).state, .searching)
+    }
+
+    func testMatchingTargetRecoversAfterTemporaryLoss() {
+        var tracker = MainTargetTracker()
+        let observation = makeObservation(confidence: 0.8)
+        _ = tracker.update(with: [observation])
+        _ = tracker.update(with: [])
+
+        let recovered = tracker.update(with: [observation])
+
+        XCTAssertEqual(recovered.state, .confirmed)
+        XCTAssertNotNil(recovered.observation)
     }
 
     func testConfirmedBoxIsSmoothedAcrossFrames() throws {

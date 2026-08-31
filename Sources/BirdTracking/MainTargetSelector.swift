@@ -14,25 +14,29 @@ struct MainTargetTrackingConfiguration: Equatable, Sendable {
     let weakConfirmationFrames: Int
     let minimumMatchIoU: CGFloat
     let smoothingFactor: CGFloat
+    let missedFrameTolerance: Int
 
     init(
         strongConfidence: Float = 0.65,
         weakConfidence: Float = 0.30,
         weakConfirmationFrames: Int = 3,
         minimumMatchIoU: CGFloat = 0.20,
-        smoothingFactor: CGFloat = 0.35
+        smoothingFactor: CGFloat = 0.35,
+        missedFrameTolerance: Int = 2
     ) {
         precondition((0 ... 1).contains(strongConfidence))
         precondition((0 ... strongConfidence).contains(weakConfidence))
         precondition(weakConfirmationFrames > 0)
         precondition((0 ... 1).contains(minimumMatchIoU))
         precondition((0 ... 1).contains(smoothingFactor))
+        precondition(missedFrameTolerance >= 0)
 
         self.strongConfidence = strongConfidence
         self.weakConfidence = weakConfidence
         self.weakConfirmationFrames = weakConfirmationFrames
         self.minimumMatchIoU = minimumMatchIoU
         self.smoothingFactor = smoothingFactor
+        self.missedFrameTolerance = missedFrameTolerance
     }
 }
 
@@ -40,6 +44,7 @@ enum MainTargetTrackingState: Equatable, Sendable {
     case searching
     case confirming(currentFrame: Int, requiredFrames: Int)
     case confirmed
+    case temporarilyLost(currentFrame: Int, toleratedFrames: Int)
 }
 
 struct MainTargetTrackingResult: Equatable, Sendable {
@@ -55,6 +60,7 @@ struct MainTargetTracker: Sendable {
     private var candidate: BirdObservation?
     private var candidateFrameCount = 0
     private var confirmedObservation: BirdObservation?
+    private var missedFrameCount = 0
 
     init(
         selector: MainTargetSelector = MainTargetSelector(),
@@ -68,8 +74,7 @@ struct MainTargetTracker: Sendable {
         guard let selected = selector.select(from: observations),
               selected.confidence >= configuration.weakConfidence
         else {
-            reset()
-            return MainTargetTrackingResult(observation: nil, focusPoint: nil, state: .searching)
+            return handleMissingObservation()
         }
 
         if selected.confidence >= configuration.strongConfidence {
@@ -102,6 +107,7 @@ struct MainTargetTracker: Sendable {
         candidate = nil
         candidateFrameCount = 0
         confirmedObservation = nil
+        missedFrameCount = 0
     }
 
     private mutating func continueConfirmation(
@@ -164,11 +170,31 @@ struct MainTargetTracker: Sendable {
         candidate = nil
         candidateFrameCount = 0
         confirmedObservation = observation
+        missedFrameCount = 0
 
         return MainTargetTrackingResult(
             observation: observation,
             focusPoint: observation.boundingBox.normalizedCenter,
             state: .confirmed
+        )
+    }
+
+    private mutating func handleMissingObservation() -> MainTargetTrackingResult {
+        guard let confirmedObservation,
+              missedFrameCount < configuration.missedFrameTolerance
+        else {
+            reset()
+            return MainTargetTrackingResult(observation: nil, focusPoint: nil, state: .searching)
+        }
+
+        missedFrameCount += 1
+        return MainTargetTrackingResult(
+            observation: confirmedObservation,
+            focusPoint: confirmedObservation.boundingBox.normalizedCenter,
+            state: .temporarilyLost(
+                currentFrame: missedFrameCount,
+                toleratedFrames: configuration.missedFrameTolerance
+            )
         )
     }
 }
