@@ -65,6 +65,7 @@ struct CaptureShutterButton: View {
 struct VideoRecordingStatusView: View {
     let status: VideoRecordingStatus
     let includesAudio: Bool
+    let hudSnapshot: () -> VideoRecordingHUDSnapshot
 
     var body: some View {
         switch status {
@@ -72,11 +73,22 @@ struct VideoRecordingStatusView: View {
             statusPill("正在准备录像")
         case let .recording(startedAt):
             TimelineView(.periodic(from: .now, by: 0.5)) { context in
-                statusPill(
-                    "● \(VideoRecordingDurationFormatter.text(from: startedAt, to: context.date))"
-                        + (includesAudio ? "" : " · 静音")
-                )
-                .foregroundStyle(.red)
+                let snapshot = hudSnapshot()
+                VStack(spacing: 5) {
+                    statusPill(
+                        "● \(VideoRecordingDurationFormatter.text(from: startedAt, to: context.date))"
+                            + (includesAudio ? "" : " · 静音")
+                    )
+                    .foregroundStyle(.red)
+                    Text(
+                        "\(VideoRecordingHUDFormatter.batteryText(level: snapshot.batteryLevel))"
+                            + " · \(VideoRecordingHUDFormatter.storageText(bytes: snapshot.availableCapacity))"
+                    )
+                    .font(.caption.monospacedDigit())
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(CameraDesign.overlayBackground, in: Capsule())
+                }
             }
         case .saving:
             statusPill("正在保存视频")

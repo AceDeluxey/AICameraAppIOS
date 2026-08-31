@@ -24,6 +24,8 @@ final class CameraSessionController: ObservableObject {
     @Published var captureMode = CameraCaptureMode.photo
     @Published var videoRecordingStatus = VideoRecordingStatus.idle
     @Published var isRecordingAudioEnabled = false
+    @Published var availableVideoFormats: [VideoFormatOption] = []
+    @Published var selectedVideoFormat: VideoFormatOption?
     @Published var latestThumbnail: UIImage?
     @Published var focusPoint: CGPoint?
     @Published var interruptionMessage: String?
@@ -66,6 +68,7 @@ final class CameraSessionController: ObservableObject {
 
     init() {
         includesLocationMetadata = UserDefaults.standard.bool(forKey: Self.locationPreferenceKey)
+        UIDevice.current.isBatteryMonitoringEnabled = true
         observeSessionNotifications()
     }
 
@@ -258,6 +261,7 @@ final class CameraSessionController: ObservableObject {
             }
         }
         updateLensState(for: device)
+        refreshVideoFormats(for: device)
     }
 }
 

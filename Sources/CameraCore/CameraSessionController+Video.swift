@@ -1,5 +1,7 @@
 import AVFoundation
+import CoreMedia
 import Foundation
+import UIKit
 
 extension CameraSessionController {
     @MainActor
@@ -22,6 +24,26 @@ extension CameraSessionController {
         } else {
             prepareVideoRecording()
         }
+    }
+
+    @MainActor
+    func selectVideoFormat(_ option: VideoFormatOption) {
+        guard !videoRecordingStatus.isBusy, availableVideoFormats.contains(option) else { return }
+        sessionQueue.async { [weak self] in
+            self?.applyVideoFormat(option)
+        }
+    }
+
+    @MainActor
+    func currentVideoHUDSnapshot() -> VideoRecordingHUDSnapshot {
+        let batteryLevel = Double(UIDevice.current.batteryLevel)
+        let availableCapacity = try? FileManager.default.temporaryDirectory
+            .resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
+            .volumeAvailableCapacityForImportantUsage
+        return VideoRecordingHUDSnapshot(
+            batteryLevel: batteryLevel >= 0 ? batteryLevel : nil,
+            availableCapacity: availableCapacity
+        )
     }
 
     @MainActor
@@ -127,6 +149,67 @@ extension CameraSessionController {
                 to: connection,
                 device: activeDevice
             )
+        }
+    }
+
+    func refreshVideoFormats(for device: AVCaptureDevice) {
+        let descriptors = device.formats.map { format in
+            let dimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+            return VideoFormatDescriptor(
+                width: dimensions.width,
+                height: dimensions.height,
+                frameRateRanges: format.videoSupportedFrameRateRanges.map {
+                    $0.minFrameRate ... $0.maxFrameRate
+                }
+            )
+        }
+        let options = VideoFormatOptionBuilder.options(from: descriptors)
+        let activeDimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
+        let frameDuration = CMTimeGetSeconds(device.activeVideoMaxFrameDuration)
+        let activeRate = frameDuration.isFinite && frameDuration > 0
+            ? Int(round(1 / frameDuration))
+            : 0
+        let selected = options.first {
+            $0.width == activeDimensions.width
+                && $0.height == activeDimensions.height
+                && $0.framesPerSecond == activeRate
+        }
+
+        Task { @MainActor in
+            self.availableVideoFormats = options
+            self.selectedVideoFormat = selected
+        }
+    }
+
+    private func applyVideoFormat(_ option: VideoFormatOption) {
+        guard let activeDevice else { return }
+        let matchingFormat = activeDevice.formats.first { format in
+            let dimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+            return dimensions.width == option.width
+                && dimensions.height == option.height
+                && format.videoSupportedFrameRateRanges.contains {
+                    $0.minFrameRate <= Double(option.framesPerSecond)
+                        && $0.maxFrameRate >= Double(option.framesPerSecond)
+                }
+        }
+        guard let matchingFormat else {
+            refreshVideoFormats(for: activeDevice)
+            return
+        }
+
+        do {
+            try activeDevice.lockForConfiguration()
+            activeDevice.activeFormat = matchingFormat
+            let duration = CMTime(value: 1, timescale: CMTimeScale(option.framesPerSecond))
+            activeDevice.activeVideoMinFrameDuration = duration
+            activeDevice.activeVideoMaxFrameDuration = duration
+            activeDevice.unlockForConfiguration()
+            applyStabilization()
+            Task { @MainActor in self.selectedVideoFormat = option }
+        } catch {
+            Task { @MainActor in
+                self.videoRecordingStatus = .failed("视频档位切换失败：\(error.localizedDescription)")
+            }
         }
     }
 

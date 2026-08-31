@@ -190,7 +190,8 @@ private extension CameraScreen {
         } else if camera.videoRecordingStatus != .idle {
             VideoRecordingStatusView(
                 status: camera.videoRecordingStatus,
-                includesAudio: camera.isRecordingAudioEnabled
+                includesAudio: camera.isRecordingAudioEnabled,
+                hudSnapshot: camera.currentVideoHUDSnapshot
             )
         } else if birdModeEnabled, let birdMessage {
             statusPill(birdMessage)
@@ -239,11 +240,34 @@ private extension CameraScreen {
 
 private extension CameraScreen {
     private var captureModePicker: some View {
-        CaptureModePicker(
-            selectedMode: camera.captureMode,
-            isDisabled: camera.videoRecordingStatus.isBusy,
-            selectMode: camera.setCaptureMode
-        )
+        VStack(spacing: 8) {
+            if camera.captureMode == .video, !camera.availableVideoFormats.isEmpty {
+                videoFormatPicker
+            }
+            CaptureModePicker(
+                selectedMode: camera.captureMode,
+                isDisabled: camera.videoRecordingStatus.isBusy,
+                selectMode: camera.setCaptureMode
+            )
+        }
+    }
+
+    private var videoFormatPicker: some View {
+        Menu {
+            ForEach(camera.availableVideoFormats) { option in
+                Button(option.displayName) { camera.selectVideoFormat(option) }
+            }
+        } label: {
+            Text(camera.selectedVideoFormat?.displayName ?? "选择视频档位")
+                .font(.subheadline.bold().monospacedDigit())
+                .padding(.horizontal, 14)
+                .frame(minHeight: 44)
+                .background(CameraDesign.overlayBackground, in: Capsule())
+        }
+        .foregroundStyle(.white)
+        .disabled(camera.videoRecordingStatus.isBusy)
+        .accessibilityLabel("视频分辨率与帧率")
+        .accessibilityValue(camera.selectedVideoFormat?.displayName ?? "无可用档位")
     }
 
     @ViewBuilder

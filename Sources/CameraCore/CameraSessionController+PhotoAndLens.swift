@@ -106,6 +106,7 @@ extension CameraSessionController {
                 activeDevice = device
                 activeDeviceID = device.uniqueID
                 updateLensState(for: device)
+                refreshVideoFormats(for: device)
             } else {
                 session.addInput(currentInput)
             }
