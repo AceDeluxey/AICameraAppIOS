@@ -23,4 +23,5 @@
 - 应用名暂定 `AICameraApp`，Bundle ID 暂定 `com.acedeluxey.aicamera`，最低版本暂定 iOS 17。
 - 使用 XcodeGen 维护 `project.yml`，`AICameraApp.xcodeproj` 在 Mac 上生成，不提交生成文件。
 - 当前包含 SwiftUI 入口、AVFoundation 后置相机预览、七个模块边界、单元/UI 测试 Target、隐私清单和已通过的 macOS CI。
+- M1.1 已加入运行时相机能力探测和 Debug 报告入口，可列出物理/虚拟镜头、格式、帧率、防抖、对焦、曝光和变焦能力。
 - Android 模型和数据尚未复制，等待商业复用授权与模型仓库方案确认。
