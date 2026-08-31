@@ -5,9 +5,7 @@ struct BirdClassificationCandidatesView: View {
     let isEnabled: Bool
 
     var body: some View {
-        if isEnabled,
-           case let .candidates(candidates) = status,
-           !candidates.isEmpty {
+        if isEnabled, case let .candidates(candidates) = status, !candidates.isEmpty {
             VStack(spacing: 2) {
                 ForEach(Array(candidates.prefix(3).enumerated()), id: \.element.identifier) { index, candidate in
                     Text(

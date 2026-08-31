@@ -72,8 +72,7 @@ actor BirdClassificationCoordinator {
             pendingCount = 1
         }
 
-        if displayed.isEmpty || displayed.first?.identifier == top.identifier
-            || pendingCount >= requiredStableResults {
+        if displayed.isEmpty || displayed.first?.identifier == top.identifier || pendingCount >= requiredStableResults {
             displayed = Array(candidates.prefix(3))
         }
         return displayed

@@ -47,8 +47,7 @@ extension CameraSessionController {
                         height: CVPixelBufferGetHeight(frame.pixelBuffer)
                     )
                 )
-                if case .confirmed = result.trackingResult.state,
-                   let observation = result.trackingResult.observation {
+                if case .confirmed = result.trackingResult.state, let observation = result.trackingResult.observation {
                     await classifyBird(
                         in: frame,
                         boundingBox: observation.boundingBox
