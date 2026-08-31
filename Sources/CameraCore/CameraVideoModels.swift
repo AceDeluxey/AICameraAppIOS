@@ -96,7 +96,7 @@ enum VideoFormatOptionBuilder {
         guard !descriptors.isEmpty else { return [] }
         let fullPixelSize = fullPixelSize(from: descriptors)
 
-        var options = Set<VideoFormatOption>()
+        var collectedOptions = Set<VideoFormatOption>()
         for descriptor in descriptors {
             guard let resolution = resolution(
                 width: descriptor.width,
@@ -104,10 +104,10 @@ enum VideoFormatOptionBuilder {
                 fullPixelSize: fullPixelSize
             ) else { continue }
 
-            options.formUnion(options(for: descriptor, resolution: resolution))
+            collectedOptions.formUnion(options(for: descriptor, resolution: resolution))
         }
 
-        return options.sorted {
+        return collectedOptions.sorted {
             let lhsRank = VideoResolution.allCases.firstIndex(of: $0.resolution) ?? .max
             let rhsRank = VideoResolution.allCases.firstIndex(of: $1.resolution) ?? .max
             if lhsRank != rhsRank {
