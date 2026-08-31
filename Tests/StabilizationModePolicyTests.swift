@@ -49,4 +49,18 @@ final class StabilizationModePolicyTests: XCTestCase {
 
         XCTAssertEqual(publicModes, [.off, .automatic])
     }
+
+    func testResultDescriptionIncludesRequestedPreferredAndActiveModes() {
+        let result = StabilizationApplicationResult(
+            requestedMode: .cinematic,
+            preferredMode: .auto,
+            activeMode: .standard,
+            usedFallback: true
+        )
+
+        XCTAssertTrue(result.textDescription.contains("请求：电影级（内部）"))
+        XCTAssertTrue(result.textDescription.contains("首选：auto"))
+        XCTAssertTrue(result.textDescription.contains("实际：standard"))
+        XCTAssertTrue(result.textDescription.contains("降级：是"))
+    }
 }

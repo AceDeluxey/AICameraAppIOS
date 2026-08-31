@@ -14,14 +14,18 @@ final class CameraSessionController: ObservableObject {
 
     @Published private(set) var state: State = .idle
     @Published private(set) var capabilityReport: CameraCapabilityReport?
+    @Published private(set) var stabilizationResult: StabilizationApplicationResult?
 
     let session = AVCaptureSession()
 
     private let sessionQueue = DispatchQueue(label: "com.acedeluxey.aicamera.camera-session")
     private let capabilityProbe = CameraCapabilityProbe()
     private let frameOutput = CameraFrameOutput()
+    private let stabilizationController = CameraStabilizationController()
     private var isConfigured = false
     private var activeDeviceID: String?
+    private var activeDevice: AVCaptureDevice?
+    private var requestedStabilizationMode = StabilizationModeSelection.automatic
 
     @MainActor
     func start() async {
@@ -60,6 +64,18 @@ final class CameraSessionController: ObservableObject {
     @MainActor
     func refreshCapabilities() {
         generateCapabilityReport()
+        sessionQueue.async { [weak self] in
+            self?.applyStabilization()
+        }
+    }
+
+    @MainActor
+    func setStabilizationMode(_ mode: StabilizationModeSelection) {
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            requestedStabilizationMode = mode
+            applyStabilization()
+        }
     }
 
     private func configureAndStart() {
@@ -74,6 +90,7 @@ final class CameraSessionController: ObservableObject {
                 if !session.isRunning {
                     session.startRunning()
                 }
+                applyStabilization()
                 Task { @MainActor in
                     self.state = .running
                     DiagnosticsLogger.camera.info("Camera session started")
@@ -108,6 +125,7 @@ final class CameraSessionController: ObservableObject {
         }
         session.addInput(input)
         activeDeviceID = device.uniqueID
+        activeDevice = device
 
         let photoOutput = AVCapturePhotoOutput()
         guard session.canAddOutput(photoOutput) else {
@@ -119,6 +137,33 @@ final class CameraSessionController: ObservableObject {
             throw CameraError.cannotAddVideoOutput
         }
         session.addOutput(frameOutput.captureOutput)
+    }
+
+    private func applyStabilization() {
+        guard
+            let activeDevice,
+            let connection = frameOutput.captureOutput.connection(with: .video)
+        else {
+            Task { @MainActor in
+                self.stabilizationResult = nil
+            }
+            return
+        }
+
+        let result = stabilizationController.apply(
+            requestedStabilizationMode,
+            to: connection,
+            device: activeDevice
+        )
+        Task { @MainActor in
+            self.stabilizationResult = result
+            let requestedName = result.requestedMode.rawValue
+            let preferredName = result.preferredMode.diagnosticName
+            let activeName = result.activeMode.diagnosticName
+            DiagnosticsLogger.camera.info("Stabilization requested=\(requestedName, privacy: .public)")
+            DiagnosticsLogger.camera.info("Stabilization preferred=\(preferredName, privacy: .public)")
+            DiagnosticsLogger.camera.info("Stabilization active=\(activeName, privacy: .public)")
+        }
     }
 
     private func generateCapabilityReport() {

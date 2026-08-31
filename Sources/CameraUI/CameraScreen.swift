@@ -44,7 +44,9 @@ struct CameraScreen: View {
         .sheet(isPresented: $showsDiagnostics) {
             CameraDiagnosticsView(
                 report: camera.capabilityReport,
-                refresh: camera.refreshCapabilities
+                stabilizationResult: camera.stabilizationResult,
+                refresh: camera.refreshCapabilities,
+                setStabilizationMode: camera.setStabilizationMode
             )
         }
     }

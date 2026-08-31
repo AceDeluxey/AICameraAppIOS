@@ -34,6 +34,21 @@ enum StabilizationModeSelection: String, CaseIterable, Sendable {
     var isPublicMode: Bool {
         self == .off || self == .automatic
     }
+
+    var displayName: String {
+        switch self {
+        case .off:
+            "关闭"
+        case .automatic:
+            "自动"
+        case .standard:
+            "标准（内部）"
+        case .cinematic:
+            "电影级（内部）"
+        case .cinematicExtended:
+            "扩展电影级（内部）"
+        }
+    }
 }
 
 struct StabilizationApplicationResult: Equatable, Sendable {
@@ -41,6 +56,36 @@ struct StabilizationApplicationResult: Equatable, Sendable {
     let preferredMode: AVCaptureVideoStabilizationMode
     let activeMode: AVCaptureVideoStabilizationMode
     let usedFallback: Bool
+
+    var textDescription: String {
+        [
+            "请求：\(requestedMode.displayName)",
+            "首选：\(preferredMode.diagnosticName)",
+            "实际：\(activeMode.diagnosticName)",
+            "降级：\(usedFallback ? "是" : "否")",
+        ].joined(separator: "\n")
+    }
+}
+
+extension AVCaptureVideoStabilizationMode {
+    var diagnosticName: String {
+        switch self {
+        case .off:
+            "off"
+        case .standard:
+            "standard"
+        case .cinematic:
+            "cinematic"
+        case .cinematicExtended:
+            "cinematicExtended"
+        case .auto:
+            "auto"
+        case .previewOptimized:
+            "previewOptimized"
+        @unknown default:
+            "unknown(\(rawValue))"
+        }
+    }
 }
 
 enum StabilizationModePolicy {
