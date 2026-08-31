@@ -42,6 +42,7 @@ struct CameraScreen: View {
             }
         }
         .preferredColorScheme(.dark)
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .sheet(isPresented: $showsDiagnostics) {
             CameraDiagnosticsView(
                 report: camera.capabilityReport,
