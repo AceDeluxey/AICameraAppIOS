@@ -339,7 +339,7 @@ private extension CameraScreen {
         if camera.captureMode == .photo {
             return camera.captureStatus == .capturing
         }
-        switch camera.videoRecordingStatus {
+        return switch camera.videoRecordingStatus {
         case .preparing, .saving:
             true
         case .idle, .recording, .saved, .failed:
