@@ -28,14 +28,14 @@ struct BirdClassificationPostprocessor: Sendable {
         let total = exponentials.reduce(0, +)
         guard total.isFinite, total > 0 else { return [] }
 
-        return exponentials.enumerated()
-            .sorted { $0.element > $1.element }
+        return exponentials.indices
+            .sorted { exponentials[$0] > exponentials[$1] }
             .prefix(maximumResults)
-            .map { index, value in
+            .map { index in
                 BirdClassification(
                     identifier: labels[index].identifier,
                     displayName: labels[index].displayName,
-                    confidence: Float(value / total)
+                    confidence: Float(exponentials[index] / total)
                 )
             }
     }

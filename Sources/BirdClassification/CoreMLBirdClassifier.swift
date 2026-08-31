@@ -193,10 +193,10 @@ final class CoreMLBirdClassifier: BirdClassifying, @unchecked Sendable {
         let rowBytes = CVPixelBufferGetBytesPerRow(buffer)
         let channelSize = Self.inputSize * Self.inputSize
         let output = array.dataPointer.assumingMemoryBound(to: Float.self)
-        for y in 0 ..< Self.inputSize {
-            for x in 0 ..< Self.inputSize {
-                let sourceOffset = y * rowBytes + x * 4
-                let pixelOffset = y * Self.inputSize + x
+        for row in 0 ..< Self.inputSize {
+            for column in 0 ..< Self.inputSize {
+                let sourceOffset = row * rowBytes + column * 4
+                let pixelOffset = row * Self.inputSize + column
                 let red = Float(bytes[sourceOffset + 2]) / 255
                 let green = Float(bytes[sourceOffset + 1]) / 255
                 let blue = Float(bytes[sourceOffset]) / 255
