@@ -14,5 +14,7 @@ final class AICameraAppUITests: XCTestCase {
         XCTAssertTrue(app.buttons["aspectRatioButton"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["shutterButton"].exists)
         XCTAssertTrue(app.buttons["birdModeButton"].exists)
+        XCTAssertTrue(app.buttons["photoModeButton"].exists)
+        XCTAssertTrue(app.buttons["videoModeButton"].exists)
     }
 }

@@ -4,12 +4,16 @@ import UIKit
 extension CameraSessionController {
     @MainActor
     func toggleAspectRatio() {
+        guard !videoRecordingStatus.isBusy else { return }
         aspectRatio = aspectRatio == .fourByThree ? .sixteenByNine : .fourByThree
     }
 
     @MainActor
     func capturePhoto() {
-        guard state == .running, captureStatus != .capturing else { return }
+        guard state == .running,
+              captureMode == .photo,
+              captureStatus != .capturing
+        else { return }
         captureStatus = .capturing
         let selectedRatio = aspectRatio
         sessionQueue.async { [weak self] in
@@ -39,7 +43,7 @@ extension CameraSessionController {
 
     @MainActor
     func selectLens(id: String) {
-        guard id != activeLensID else { return }
+        guard id != activeLensID, !videoRecordingStatus.isBusy else { return }
         sessionQueue.async { [weak self] in
             self?.switchLens(to: id)
         }

@@ -3,7 +3,7 @@ import Foundation
 
 extension CameraSessionController {
     func configureBirdDetectionIfAvailable() {
-        guard isBirdModeEnabled else { return }
+        guard isBirdModeEnabled, movieOutput?.isRecording != true else { return }
         if birdDetectionCoordinator == nil {
             do {
                 let detector = try BirdDetectionRuntimeFactory.loadBundledDetector()
@@ -31,7 +31,10 @@ extension CameraSessionController {
     }
 
     func processBirdFrame(_ frame: CameraFrame) {
-        guard isBirdModeEnabled, let birdDetectionCoordinator else { return }
+        guard isBirdModeEnabled,
+              movieOutput?.isRecording != true,
+              let birdDetectionCoordinator
+        else { return }
         Task { [weak self] in
             guard let self else { return }
             do {

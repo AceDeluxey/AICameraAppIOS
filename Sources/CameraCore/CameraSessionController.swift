@@ -21,6 +21,9 @@ final class CameraSessionController: ObservableObject {
     @Published var zoomFactor: CGFloat = 1
     @Published var zoomRange: ClosedRange<CGFloat> = 1 ... 1
     @Published var captureStatus: CameraCaptureStatus = .idle
+    @Published var captureMode = CameraCaptureMode.photo
+    @Published var videoRecordingStatus = VideoRecordingStatus.idle
+    @Published var isRecordingAudioEnabled = false
     @Published var latestThumbnail: UIImage?
     @Published var focusPoint: CGPoint?
     @Published var interruptionMessage: String?
@@ -49,6 +52,10 @@ final class CameraSessionController: ObservableObject {
     var activeDevice: AVCaptureDevice?
     var activeInput: AVCaptureDeviceInput?
     var photoOutput: AVCapturePhotoOutput?
+    var movieOutput: AVCaptureMovieFileOutput?
+    var audioInput: AVCaptureDeviceInput?
+    var videoRecordingProcessor: VideoRecordingProcessor?
+    var stopsSessionAfterRecording = false
     var photoProcessors: [Int64: PhotoCaptureProcessor] = [:]
     var requestedStabilizationMode = StabilizationModeSelection.automatic
     var notificationTokens: [NSObjectProtocol] = []
@@ -94,9 +101,14 @@ final class CameraSessionController: ObservableObject {
     @MainActor
     func stop() {
         state = .idle
-        sessionQueue.async { [session] in
-            guard session.isRunning else { return }
-            session.stopRunning()
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            if movieOutput?.isRecording == true {
+                stopsSessionAfterRecording = true
+                movieOutput?.stopRecording()
+            } else if session.isRunning {
+                session.stopRunning()
+            }
         }
     }
 
@@ -229,6 +241,13 @@ final class CameraSessionController: ObservableObject {
         photoOutput.maxPhotoQualityPrioritization = .quality
         self.photoOutput = photoOutput
 
+        let movieOutput = AVCaptureMovieFileOutput()
+        guard session.canAddOutput(movieOutput) else {
+            throw CameraError.cannotAddMovieOutput
+        }
+        session.addOutput(movieOutput)
+        self.movieOutput = movieOutput
+
         guard session.canAddOutput(frameOutput.captureOutput) else {
             throw CameraError.cannotAddVideoOutput
         }
@@ -246,6 +265,7 @@ private enum CameraError: LocalizedError {
     case noBackCamera
     case cannotAddInput
     case cannotAddPhotoOutput
+    case cannotAddMovieOutput
     case cannotAddVideoOutput
 
     var errorDescription: String? {
@@ -256,6 +276,8 @@ private enum CameraError: LocalizedError {
             "无法连接相机输入"
         case .cannotAddPhotoOutput:
             "无法创建拍照输出"
+        case .cannotAddMovieOutput:
+            "无法创建视频录制输出"
         case .cannotAddVideoOutput:
             "无法创建视频帧分析输出"
         }

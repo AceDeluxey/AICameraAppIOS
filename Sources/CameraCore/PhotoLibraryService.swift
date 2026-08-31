@@ -26,6 +26,29 @@ struct PhotoLibraryService: Sendable {
         }
     }
 
+    func saveVideo(at fileURL: URL) async throws {
+        let status = await authorizationStatus()
+        guard status == .authorized || status == .limited else {
+            throw PhotoLibraryError.unauthorized
+        }
+
+        let _: Void = try await withCheckedThrowingContinuation { continuation in
+            PHPhotoLibrary.shared().performChanges {
+                let request = PHAssetCreationRequest.forAsset()
+                request.creationDate = Date()
+                request.addResource(with: .video, fileURL: fileURL, options: nil)
+            } completionHandler: { saved, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else if saved {
+                    continuation.resume()
+                } else {
+                    continuation.resume(throwing: PhotoLibraryError.cannotSave)
+                }
+            }
+        }
+    }
+
     private func authorizationStatus() async -> PHAuthorizationStatus {
         let current = PHPhotoLibrary.authorizationStatus(for: .addOnly)
         guard current == .notDetermined else { return current }

@@ -39,6 +39,7 @@ enum BirdModeStatus: Equatable, Sendable {
     case confirming
     case locked(confidence: Float)
     case temporarilyLost
+    case pausedForRecording
     case failed(String)
 }
 
