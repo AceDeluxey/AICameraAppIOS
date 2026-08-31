@@ -38,6 +38,7 @@ final class CameraSessionController: ObservableObject {
             UserDefaults.standard.set(controlMode.rawValue, forKey: Self.controlModePreferenceKey)
         }
     }
+
     @Published var professionalCapabilities: CameraProfessionalCapabilities?
     @Published var professionalSettings = CameraProfessionalSettings(
         exposureBias: 0,

@@ -6,12 +6,12 @@ final class CameraProfessionalModelsTests: XCTestCase {
         let capabilities = CameraProfessionalCapabilities(
             exposureBiasRange: -2 ... 2,
             isoRange: 50 ... 800,
-            exposureDurationRange: 1 / 8_000 ... 1,
+            exposureDurationRange: 1 / 8000 ... 1,
             supportsManualFocus: true
         )
         let settings = CameraProfessionalSettings(
             exposureBias: 4,
-            iso: 1_600,
+            iso: 1600,
             exposureDuration: 2,
             lensPosition: -1
         ).constrained(to: capabilities)
@@ -49,7 +49,7 @@ final class CameraProfessionalModelsTests: XCTestCase {
     }
 
     func testLogarithmicScaleRoundTripsExposureDuration() {
-        let range = 1 / 8_000.0 ... 1.0
+        let range = 1 / 8000.0 ... 1.0
         let duration = 1 / 125.0
         let normalized = CameraProfessionalScale.normalized(duration, in: range)
 
@@ -57,10 +57,10 @@ final class CameraProfessionalModelsTests: XCTestCase {
     }
 
     func testLogarithmicScaleConstrainsOutOfRangeValues() {
-        let range = 50.0 ... 1_600.0
+        let range = 50.0 ... 1600.0
 
         XCTAssertEqual(CameraProfessionalScale.normalized(10, in: range), 0, accuracy: 0.000_001)
-        XCTAssertEqual(CameraProfessionalScale.value(2, in: range), 1_600, accuracy: 0.000_001)
+        XCTAssertEqual(CameraProfessionalScale.value(2, in: range), 1600, accuracy: 0.000_001)
     }
 
     func testProfessionalValueFormatting() {
