@@ -29,8 +29,7 @@ extension CameraScreen {
 
     @ViewBuilder
     var professionalControls: some View {
-        if let capabilities = camera.professionalCapabilities,
-           capabilities.exposureBiasRange != nil || camera.controlMode == .professional {
+        if let capabilities = visibleProfessionalCapabilities {
             CameraProfessionalControls(
                 mode: camera.controlMode,
                 capabilities: capabilities,
@@ -39,5 +38,12 @@ extension CameraScreen {
                 setControl: camera.setProfessionalControl
             )
         }
+    }
+
+    private var visibleProfessionalCapabilities: CameraProfessionalCapabilities? {
+        guard let capabilities = camera.professionalCapabilities else { return nil }
+        return capabilities.exposureBiasRange != nil || camera.controlMode == .professional
+            ? capabilities
+            : nil
     }
 }

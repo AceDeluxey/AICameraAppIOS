@@ -198,8 +198,7 @@ private extension CameraScreen {
             statusPill(birdMessage)
         } else if case let .failed(message) = camera.professionalStatus {
             statusPill(message)
-        } else if case let .unavailable(message) = camera.professionalStatus,
-                  camera.controlMode == .professional {
+        } else if case let .unavailable(message) = camera.professionalStatus, camera.controlMode == .professional {
             statusPill(message)
         } else {
             switch camera.state {
