@@ -18,7 +18,7 @@ final class CameraCapabilityReportTests: XCTestCase {
 
     func testReportRoundTripsThroughJSON() throws {
         let report = CameraCapabilityReport(
-            generatedAt: Date(timeIntervalSince1970: 1_000),
+            generatedAt: Date(timeIntervalSince1970: 1000),
             operatingSystem: "Test OS",
             activeDeviceID: nil,
             devices: [sampleDevice]
@@ -54,7 +54,7 @@ final class CameraCapabilityReportTests: XCTestCase {
                     supportsHDR: true,
                     autofocusSystem: "phaseDetection",
                     minimumISO: 20,
-                    maximumISO: 2_000,
+                    maximumISO: 2000,
                     minimumExposureSeconds: 0.0001,
                     maximumExposureSeconds: 1,
                     maximumZoomFactor: 8,

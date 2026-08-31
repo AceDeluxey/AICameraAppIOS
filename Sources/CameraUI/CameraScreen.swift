@@ -16,14 +16,14 @@ struct CameraScreen: View {
                 HStack {
                     statusView
                     Spacer()
-#if DEBUG
-                    Button(action: { showsDiagnostics = true }, label: {
-                        Image(systemName: "info.circle")
-                            .frame(width: 44, height: 44)
-                            .background(.black.opacity(0.6), in: Circle())
-                    })
-                    .accessibilityLabel("相机能力")
-#endif
+                    #if DEBUG
+                        Button(action: { showsDiagnostics = true }, label: {
+                            Image(systemName: "info.circle")
+                                .frame(width: 44, height: 44)
+                                .background(.black.opacity(0.6), in: Circle())
+                        })
+                        .accessibilityLabel("相机能力")
+                    #endif
                 }
                 Spacer()
                 controls
