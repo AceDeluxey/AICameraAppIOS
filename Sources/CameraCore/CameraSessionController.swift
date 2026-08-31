@@ -13,11 +13,14 @@ final class CameraSessionController: ObservableObject {
     }
 
     @Published private(set) var state: State = .idle
+    @Published private(set) var capabilityReport: CameraCapabilityReport?
 
     let session = AVCaptureSession()
 
     private let sessionQueue = DispatchQueue(label: "com.acedeluxey.aicamera.camera-session")
+    private let capabilityProbe = CameraCapabilityProbe()
     private var isConfigured = false
+    private var activeDeviceID: String?
 
     @MainActor
     func start() async {
@@ -53,6 +56,11 @@ final class CameraSessionController: ObservableObject {
         }
     }
 
+    @MainActor
+    func refreshCapabilities() {
+        generateCapabilityReport()
+    }
+
     private func configureAndStart() {
         sessionQueue.async { [weak self] in
             guard let self else { return }
@@ -69,6 +77,7 @@ final class CameraSessionController: ObservableObject {
                     self.state = .running
                     DiagnosticsLogger.camera.info("Camera session started")
                 }
+                generateCapabilityReport()
             } catch {
                 Task { @MainActor in
                     self.state = .failed(error.localizedDescription)
@@ -97,12 +106,24 @@ final class CameraSessionController: ObservableObject {
             throw CameraError.cannotAddInput
         }
         session.addInput(input)
+        activeDeviceID = device.uniqueID
 
         let photoOutput = AVCapturePhotoOutput()
         guard session.canAddOutput(photoOutput) else {
             throw CameraError.cannotAddPhotoOutput
         }
         session.addOutput(photoOutput)
+    }
+
+    private func generateCapabilityReport() {
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            let report = capabilityProbe.makeReport(activeDeviceID: activeDeviceID)
+            Task { @MainActor in
+                self.capabilityReport = report
+                DiagnosticsLogger.camera.info("Camera capability report generated")
+            }
+        }
     }
 }
 

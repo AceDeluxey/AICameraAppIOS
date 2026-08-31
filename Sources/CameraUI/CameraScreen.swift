@@ -3,6 +3,7 @@ import SwiftUI
 struct CameraScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var camera = CameraSessionController()
+    @State private var showsDiagnostics = false
 
     var body: some View {
         ZStack {
@@ -12,7 +13,18 @@ struct CameraScreen: View {
                 .ignoresSafeArea()
 
             VStack {
-                statusView
+                HStack {
+                    statusView
+                    Spacer()
+#if DEBUG
+                    Button(action: { showsDiagnostics = true }, label: {
+                        Image(systemName: "info.circle")
+                            .frame(width: 44, height: 44)
+                            .background(.black.opacity(0.6), in: Circle())
+                    })
+                    .accessibilityLabel("相机能力")
+#endif
+                }
                 Spacer()
                 controls
             }
@@ -29,6 +41,12 @@ struct CameraScreen: View {
             }
         }
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $showsDiagnostics) {
+            CameraDiagnosticsView(
+                report: camera.capabilityReport,
+                refresh: camera.refreshCapabilities
+            )
+        }
     }
 
     @ViewBuilder
