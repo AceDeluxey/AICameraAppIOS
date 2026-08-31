@@ -177,7 +177,7 @@ private extension BirdRegionPrior {
         return (String(fields[1]), table)
     }
 
-    static func parseRegions(_ contents: String) throws -> [Region] {
+    private static func parseRegions(_ contents: String) throws -> [Region] {
         var regions: [Region] = []
         var currentMatch: BirdRegionMatch?
         var rings: [[CGPoint]] = []
