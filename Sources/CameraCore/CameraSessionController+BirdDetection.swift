@@ -72,7 +72,10 @@ extension CameraSessionController {
         guard !birdClassificationSetupAttempted else { return }
         birdClassificationSetupAttempted = true
         do {
-            let classifier = try BirdClassificationRuntimeFactory.loadBundledClassifier()
+            configureBirdRegionPriorIfAvailable()
+            let classifier = try BirdClassificationRuntimeFactory.loadBundledClassifier(
+                prior: birdRegionPrior
+            )
             birdClassificationCoordinator = BirdClassificationCoordinator(classifier: classifier)
             Task { @MainActor in self.birdClassificationStatus = .searching }
         } catch {
@@ -80,6 +83,40 @@ extension CameraSessionController {
             Task { @MainActor in self.birdClassificationStatus = .unavailable }
             DiagnosticsLogger.detection.info(
                 "Bird classification unavailable: \(error.localizedDescription, privacy: .public)"
+            )
+        }
+    }
+
+    func configureBirdRegionPriorIfAvailable() {
+        guard !birdRegionPriorSetupAttempted else { return }
+        birdRegionPriorSetupAttempted = true
+        do {
+            birdRegionPrior = try BirdRegionPrior.loadBundled()
+        } catch {
+            birdRegionPrior = nil
+            DiagnosticsLogger.detection.info(
+                "Bird region prior unavailable: \(error.localizedDescription, privacy: .public)"
+            )
+        }
+    }
+
+    func refreshBirdRecognitionLocationIfNeeded() {
+        guard isBirdModeEnabled, usesLocationForBirdRecognition else {
+            birdRegionPrior?.clear()
+            return
+        }
+        configureBirdRegionPriorIfAvailable()
+        guard let birdRegionPrior else { return }
+        Task { [weak self] in
+            guard let self else { return }
+            guard let location = await photoLocationProvider.currentLocation() else {
+                birdRegionPrior.clear()
+                return
+            }
+            birdRegionPrior.update(
+                latitude: location.coordinate.latitude,
+                longitude: location.coordinate.longitude,
+                month: Calendar.current.component(.month, from: Date())
             )
         }
     }

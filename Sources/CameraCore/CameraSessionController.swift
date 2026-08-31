@@ -53,6 +53,14 @@ final class CameraSessionController: ObservableObject {
             UserDefaults.standard.set(includesLocationMetadata, forKey: Self.locationPreferenceKey)
         }
     }
+    @Published var usesLocationForBirdRecognition: Bool {
+        didSet {
+            UserDefaults.standard.set(
+                usesLocationForBirdRecognition,
+                forKey: Self.recognitionLocationPreferenceKey
+            )
+        }
+    }
 
     @Published var thermalState = ProcessInfo.processInfo.thermalState
 
@@ -80,12 +88,18 @@ final class CameraSessionController: ObservableObject {
     var birdDetectionCoordinator: BirdDetectionCoordinator?
     var birdClassificationCoordinator: BirdClassificationCoordinator?
     var birdClassificationSetupAttempted = false
+    var birdRegionPrior: BirdRegionPrior?
+    var birdRegionPriorSetupAttempted = false
     var isBirdModeEnabled = false
     static let locationPreferenceKey = "includesPhotoLocationMetadata"
+    static let recognitionLocationPreferenceKey = "usesLocationForBirdRecognition"
     static let controlModePreferenceKey = "cameraControlMode"
 
     init() {
         includesLocationMetadata = UserDefaults.standard.bool(forKey: Self.locationPreferenceKey)
+        usesLocationForBirdRecognition = UserDefaults.standard.bool(
+            forKey: Self.recognitionLocationPreferenceKey
+        )
         controlMode = CameraControlMode(
             rawValue: UserDefaults.standard.string(forKey: Self.controlModePreferenceKey) ?? ""
         ) ?? .automatic
@@ -178,6 +192,7 @@ final class CameraSessionController: ObservableObject {
             isBirdModeEnabled = enabled
             if enabled {
                 configureBirdDetectionIfAvailable()
+                refreshBirdRecognitionLocationIfNeeded()
             } else {
                 frameOutput.frameHandler = nil
                 if let birdDetectionCoordinator {
@@ -191,6 +206,19 @@ final class CameraSessionController: ObservableObject {
                     self.birdModeStatus = .disabled
                     self.birdClassificationStatus = .unavailable
                 }
+            }
+        }
+    }
+
+    @MainActor
+    func setUsesLocationForBirdRecognition(_ enabled: Bool) {
+        usesLocationForBirdRecognition = enabled
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            if enabled {
+                refreshBirdRecognitionLocationIfNeeded()
+            } else {
+                birdRegionPrior?.clear()
             }
         }
     }

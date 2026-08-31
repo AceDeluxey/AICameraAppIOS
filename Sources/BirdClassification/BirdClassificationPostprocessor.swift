@@ -15,7 +15,8 @@ struct BirdClassificationPostprocessor: Sendable {
 
     func classifications(
         logits: [Float],
-        labels: [BirdClassificationLabel]
+        labels: [BirdClassificationLabel],
+        prior: (any BirdPriorWeighting)? = nil
     ) -> [BirdClassification] {
         guard logits.count == labels.count,
               let maximumLogit = logits.filter(\.isFinite).max()
@@ -25,17 +26,21 @@ struct BirdClassificationPostprocessor: Sendable {
             guard value.isFinite else { return 0 }
             return exp(Double(value - maximumLogit))
         }
-        let total = exponentials.reduce(0, +)
+        let weighted = exponentials.indices.map { index -> Double in
+            let weight = prior?.weight(for: index) ?? 1
+            return exponentials[index] * Double(max(0, weight))
+        }
+        let total = weighted.reduce(0, +)
         guard total.isFinite, total > 0 else { return [] }
 
-        return exponentials.indices
-            .sorted { exponentials[$0] > exponentials[$1] }
+        return weighted.indices
+            .sorted { weighted[$0] > weighted[$1] }
             .prefix(maximumResults)
             .map { index in
                 BirdClassification(
                     identifier: labels[index].identifier,
                     displayName: labels[index].displayName,
-                    confidence: Float(exponentials[index] / total)
+                    confidence: Float(weighted[index] / total)
                 )
             }
     }

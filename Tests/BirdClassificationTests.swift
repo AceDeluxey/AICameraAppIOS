@@ -30,6 +30,51 @@ final class BirdClassificationTests: XCTestCase {
         )
     }
 
+    func testPostprocessorAppliesPriorAndRenormalizesCandidates() {
+        let labels = [
+            BirdClassificationLabel(identifier: "a", displayName: "甲"),
+            BirdClassificationLabel(identifier: "b", displayName: "乙"),
+        ]
+        let result = BirdClassificationPostprocessor().classifications(
+            logits: [2, 1],
+            labels: labels,
+            prior: StubBirdPrior(weights: [0.05, 7])
+        )
+
+        XCTAssertEqual(result.map(\.identifier), ["b", "a"])
+        XCTAssertEqual(result.reduce(0) { $0 + $1.confidence }, 1, accuracy: 0.0001)
+    }
+
+    func testRegionPriorMatchesProvinceAndAndroidMonthSmoothingWeights() throws {
+        let prior = try makeRegionPrior()
+        prior.update(latitude: 5, longitude: 5, month: 1)
+
+        XCTAssertEqual(prior.activeRegion, BirdRegionMatch(code: "110000", name: "测试省"))
+        XCTAssertEqual(prior.weight(for: 0), 1 + 6 * 64 / 255, accuracy: 0.0001)
+        XCTAssertEqual(prior.weight(for: 1), 0.22, accuracy: 0.0001)
+        XCTAssertEqual(prior.weight(for: 2), 0.05, accuracy: 0.0001)
+    }
+
+    func testRegionPriorFallsBackToNoWeightOutsideChinaOrAfterClear() throws {
+        let prior = try makeRegionPrior()
+        prior.update(latitude: 50, longitude: 50, month: 6)
+        XCTAssertNil(prior.activeRegion)
+        XCTAssertEqual(prior.weight(for: 0), 1)
+
+        prior.update(latitude: 5, longitude: 5, month: 6)
+        prior.clear()
+        XCTAssertEqual(prior.weight(for: 0), 1)
+    }
+
+    func testRegionPriorRejectsDamagedResources() {
+        XCTAssertThrowsError(
+            try BirdRegionPrior(priorContents: "v2|GBIF", polygonContents: "v1")
+        )
+        XCTAssertThrowsError(
+            try BirdRegionPrior(priorContents: "v1|GBIF|test", polygonContents: "v1\ninvalid")
+        )
+    }
+
     func testLabelParserUsesChineseAndScientificNames() {
         let labels = BirdClassificationLabelParser.parse(
             "麻雀|Eurasian Tree Sparrow|Passer montanus\n喜鹊||Pica pica\n"
@@ -116,6 +161,36 @@ final class BirdClassificationTests: XCTestCase {
         )
         XCTAssertEqual(status, kCVReturnSuccess)
         return try XCTUnwrap(buffer)
+    }
+
+    private func makeRegionPrior() throws -> BirdRegionPrior {
+        let priorContents = """
+        v1|GBIF|test
+        C|CN|全国
+        2
+        0 ff
+        1 80
+        R|110000|测试省|2
+        0 ff008000000000000000000000
+        1 ff000000000000000000000000
+        """
+        let polygonContents = """
+        v1
+        P|110000|测试省
+        0,0;10,0;10,10;0,10;0,0
+        """
+        return try BirdRegionPrior(
+            priorContents: priorContents,
+            polygonContents: polygonContents
+        )
+    }
+}
+
+private struct StubBirdPrior: BirdPriorWeighting {
+    let weights: [Float]
+
+    func weight(for index: Int) -> Float {
+        weights[index]
     }
 }
 

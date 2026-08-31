@@ -32,6 +32,9 @@ struct CameraScreen: View {
         .onChange(of: stabilizationEnabled) { _, enabled in
             camera.setStabilizationMode(enabled ? .automatic : .off)
         }
+        .onChange(of: camera.usesLocationForBirdRecognition) { _, enabled in
+            camera.setUsesLocationForBirdRecognition(enabled)
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
                 camera.stop()
@@ -167,6 +170,7 @@ private extension CameraScreen {
 
             Menu {
                 Toggle("照片记录位置", isOn: $camera.includesLocationMetadata)
+                Toggle("位置优化鸟种候选", isOn: $camera.usesLocationForBirdRecognition)
                 Toggle("稳定：自动", isOn: $stabilizationEnabled)
             } label: {
                 Image(systemName: camera.includesLocationMetadata ? "location.fill" : "ellipsis")

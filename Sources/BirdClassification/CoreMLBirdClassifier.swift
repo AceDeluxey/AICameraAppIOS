@@ -23,6 +23,7 @@ final class CoreMLBirdClassifier: BirdClassifying, @unchecked Sendable {
     private let labels: [BirdClassificationLabel]
     private let featureNames: CoreMLBirdClassifierFeatureNames
     private let postprocessor: BirdClassificationPostprocessor
+    private let prior: (any BirdPriorWeighting)?
     private let imageContext = CIContext(options: [.cacheIntermediates: false])
     private let colorSpace = CGColorSpaceCreateDeviceRGB()
 
@@ -30,12 +31,14 @@ final class CoreMLBirdClassifier: BirdClassifying, @unchecked Sendable {
         model: MLModel,
         labels: [BirdClassificationLabel],
         featureNames: CoreMLBirdClassifierFeatureNames = .init(),
-        postprocessor: BirdClassificationPostprocessor = .init()
+        postprocessor: BirdClassificationPostprocessor = .init(),
+        prior: (any BirdPriorWeighting)? = nil
     ) throws {
         self.model = model
         self.labels = labels
         self.featureNames = featureNames
         self.postprocessor = postprocessor
+        self.prior = prior
         try Self.validateModelContract(
             model.modelDescription,
             labels: labels,
@@ -58,14 +61,15 @@ final class CoreMLBirdClassifier: BirdClassifying, @unchecked Sendable {
         guard let logits = prediction.featureValue(for: featureNames.logits)?.multiArrayValue else {
             throw CoreMLBirdClassifierError.missingOutput(featureNames.logits)
         }
-        return postprocessor.classifications(logits: logits.floatValues, labels: labels)
+        return postprocessor.classifications(logits: logits.floatValues, labels: labels, prior: prior)
     }
 
     static func loadBundled(
         modelResourceName: String = "BirdClassifier",
         labelResourceName: String = "bird_labels_dongniao",
         bundle: Bundle = .main,
-        configuration: MLModelConfiguration = MLModelConfiguration()
+        configuration: MLModelConfiguration = MLModelConfiguration(),
+        prior: (any BirdPriorWeighting)? = nil
     ) throws -> CoreMLBirdClassifier {
         guard let modelURL = bundle.url(forResource: modelResourceName, withExtension: "mlmodelc") else {
             throw CoreMLBirdClassifierError.modelResourceMissing(modelResourceName)
@@ -76,7 +80,7 @@ final class CoreMLBirdClassifier: BirdClassifying, @unchecked Sendable {
         let contents = try String(contentsOf: labelURL, encoding: .utf8)
         let labels = BirdClassificationLabelParser.parse(contents)
         let model = try MLModel(contentsOf: modelURL, configuration: configuration)
-        return try CoreMLBirdClassifier(model: model, labels: labels)
+        return try CoreMLBirdClassifier(model: model, labels: labels, prior: prior)
     }
 
     private static func validateModelContract(
