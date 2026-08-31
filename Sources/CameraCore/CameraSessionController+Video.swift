@@ -248,6 +248,7 @@ extension CameraSessionController {
         frameOutput.frameHandler = nil
         Task { @MainActor in
             birdBoundingBox = nil
+            birdClassificationStatus = .unavailable
             if isBirdModeEnabled {
                 birdModeStatus = .pausedForRecording
             }

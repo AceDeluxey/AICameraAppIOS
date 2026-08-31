@@ -23,6 +23,7 @@ extension CameraSessionController {
                 return
             }
         }
+        configureBirdClassificationIfAvailable()
 
         frameOutput.frameHandler = { [weak self] frame in
             self?.processBirdFrame(frame)
@@ -46,6 +47,16 @@ extension CameraSessionController {
                         height: CVPixelBufferGetHeight(frame.pixelBuffer)
                     )
                 )
+                if case .confirmed = result.trackingResult.state,
+                   let observation = result.trackingResult.observation
+                {
+                    await classifyBird(
+                        in: frame,
+                        boundingBox: observation.boundingBox
+                    )
+                } else if case .searching = result.trackingResult.state {
+                    await clearBirdClassification()
+                }
                 sessionQueue.async { [weak self] in
                     self?.applyBirdFocusDecision(result.focusDecision)
                 }
@@ -53,6 +64,54 @@ extension CameraSessionController {
                 await publishBirdFailure(error)
             }
         }
+    }
+
+    func configureBirdClassificationIfAvailable() {
+        if birdClassificationCoordinator != nil {
+            Task { @MainActor in self.birdClassificationStatus = .searching }
+            return
+        }
+        guard !birdClassificationSetupAttempted else { return }
+        birdClassificationSetupAttempted = true
+        do {
+            let classifier = try BirdClassificationRuntimeFactory.loadBundledClassifier()
+            birdClassificationCoordinator = BirdClassificationCoordinator(classifier: classifier)
+            Task { @MainActor in self.birdClassificationStatus = .searching }
+        } catch {
+            birdClassificationCoordinator = nil
+            Task { @MainActor in self.birdClassificationStatus = .unavailable }
+            DiagnosticsLogger.detection.info(
+                "Bird classification unavailable: \(error.localizedDescription, privacy: .public)"
+            )
+        }
+    }
+
+    func classifyBird(in frame: CameraFrame, boundingBox: CGRect) async {
+        guard let birdClassificationCoordinator else { return }
+        do {
+            guard let candidates = try await birdClassificationCoordinator.submit(
+                pixelBuffer: frame.pixelBuffer,
+                birdBoundingBox: boundingBox,
+                presentationTimeSeconds: frame.presentationTimeSeconds
+            ) else { return }
+            await MainActor.run {
+                self.birdClassificationStatus = candidates.isEmpty
+                    ? .searching : .candidates(candidates)
+            }
+        } catch {
+            await MainActor.run {
+                self.birdClassificationStatus = .failed(error.localizedDescription)
+            }
+            DiagnosticsLogger.detection.error(
+                "Bird classification failed: \(error.localizedDescription, privacy: .public)"
+            )
+        }
+    }
+
+    @MainActor
+    func clearBirdClassification() async {
+        birdClassificationStatus = birdClassificationCoordinator == nil ? .unavailable : .searching
+        await birdClassificationCoordinator?.reset()
     }
 
     @MainActor
@@ -77,6 +136,7 @@ extension CameraSessionController {
     func publishBirdFailure(_ error: any Error) {
         birdBoundingBox = nil
         birdModeStatus = .failed(error.localizedDescription)
+        birdClassificationStatus = birdClassificationCoordinator == nil ? .unavailable : .searching
         DiagnosticsLogger.detection.error(
             "Bird detection failed: \(error.localizedDescription, privacy: .public)"
         )

@@ -32,6 +32,7 @@ final class CameraSessionController: ObservableObject {
     @Published var birdBoundingBox: CGRect?
     @Published var birdImageSize: CGSize = .zero
     @Published var birdModeStatus = BirdModeStatus.disabled
+    @Published var birdClassificationStatus = BirdClassificationStatus.unavailable
     @Published var aspectRatio: PhotoAspectRatio = .fourByThree
     @Published var controlMode: CameraControlMode {
         didSet {
@@ -77,6 +78,8 @@ final class CameraSessionController: ObservableObject {
     var notificationTokens: [NSObjectProtocol] = []
     let diagnosticsTimeline = DiagnosticsTimeline()
     var birdDetectionCoordinator: BirdDetectionCoordinator?
+    var birdClassificationCoordinator: BirdClassificationCoordinator?
+    var birdClassificationSetupAttempted = false
     var isBirdModeEnabled = false
     static let locationPreferenceKey = "includesPhotoLocationMetadata"
     static let controlModePreferenceKey = "cameraControlMode"
@@ -180,9 +183,13 @@ final class CameraSessionController: ObservableObject {
                 if let birdDetectionCoordinator {
                     Task { await birdDetectionCoordinator.reset() }
                 }
+                if let birdClassificationCoordinator {
+                    Task { await birdClassificationCoordinator.reset() }
+                }
                 Task { @MainActor in
                     self.birdBoundingBox = nil
                     self.birdModeStatus = .disabled
+                    self.birdClassificationStatus = .unavailable
                 }
             }
         }

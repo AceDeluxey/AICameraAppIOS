@@ -130,6 +130,7 @@ private extension CameraScreen {
     private var chrome: some View {
         VStack(spacing: 12) {
             topBar
+            birdClassificationView
             statusView
             Spacer()
             captureModePicker
@@ -140,6 +141,35 @@ private extension CameraScreen {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
+    }
+
+    @ViewBuilder
+    private var birdClassificationView: some View {
+        if birdModeEnabled,
+           case let .candidates(candidates) = camera.birdClassificationStatus,
+           !candidates.isEmpty
+        {
+            VStack(spacing: 2) {
+                ForEach(Array(candidates.prefix(3).enumerated()), id: \.element.identifier) {
+                    index, candidate in
+                    Text(
+                        "\(index + 1). \(candidate.displayName) "
+                            + "\(Int((candidate.confidence * 100).rounded()))%"
+                    )
+                }
+            }
+            .font(.headline.bold())
+            .foregroundStyle(.white)
+            .multilineTextAlignment(.center)
+            .shadow(color: .black, radius: 0, x: -1, y: 0)
+            .shadow(color: .black, radius: 0, x: 1, y: 0)
+            .shadow(color: .black, radius: 0, x: 0, y: -1)
+            .shadow(color: .black, radius: 0, x: 0, y: 1)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("鸟种候选")
+        }
     }
 
     private var topBar: some View {
