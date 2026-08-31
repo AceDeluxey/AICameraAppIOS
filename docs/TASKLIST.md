@@ -85,7 +85,7 @@
 ### M1.2 鸟体检测路线
 
 - [x] 固化 Android EfficientDet 模型、标签、预处理和后处理基线（见 `docs/M1_DETECTION_BASELINE.md`）
-- [ ] 准备固定验证集：不同大小、光线、背景、遮挡和无鸟负样本
+- [ ] 准备固定验证集：清单规范、文件哈希校验、场景覆盖校验及跨端比较工具已完成（见 `docs/DETECTION_VALIDATION.md`）；待加入有授权的不同大小、光线、背景、遮挡和无鸟负样本
 - [ ] 尝试转换为 Core ML，记录转换参数与校验值（可复现转换、接口检查和转换记录工具已完成；BLOCKED：缺少已授权且与 Android TFLite 同权重的 SavedModel）
 - [ ] 验证 Core ML 输入尺寸、色彩通道、归一化和输出解释一致（运行时适配器、接口校验、输出解析、阈值、NMS 与坐标映射已完成；待转换模型验证数值）
 - [ ] 评估 iOS ONNX Runtime/TFLite 备选路线（TFLite 适配、张量契约和测试已完成；待 Mac 集成官方运行时及真机实测）
