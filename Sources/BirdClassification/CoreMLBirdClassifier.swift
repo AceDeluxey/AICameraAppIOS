@@ -15,7 +15,7 @@ struct CoreMLBirdClassifierFeatureNames: Equatable, Sendable {
 
 final class CoreMLBirdClassifier: BirdClassifying, @unchecked Sendable {
     static let inputSize = 224
-    static let expectedClassCount = 10_964
+    static let expectedClassCount = 10964
     static let imageNetMean: [Float] = [0.485, 0.456, 0.406]
     static let imageNetStandardDeviation: [Float] = [0.229, 0.224, 0.225]
 

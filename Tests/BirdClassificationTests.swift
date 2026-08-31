@@ -12,7 +12,7 @@ final class BirdClassificationTests: XCTestCase {
         ]
 
         let result = BirdClassificationPostprocessor().classifications(
-            logits: [1_001, 1_003, 1_002, -.infinity],
+            logits: [1001, 1003, 1002, -.infinity],
             labels: labels
         )
 
@@ -86,7 +86,7 @@ final class BirdClassificationTests: XCTestCase {
     func testSquareCropConvertsTopLeftCoordinatesToCoreImageCoordinates() {
         let crop = CoreMLBirdClassifier.squareCropRect(
             normalizedBox: CGRect(x: 0.2, y: 0.3, width: 0.4, height: 0.2),
-            imageExtent: CGRect(x: 0, y: 0, width: 1_000, height: 500),
+            imageExtent: CGRect(x: 0, y: 0, width: 1000, height: 500),
             expansion: 1
         )
 
