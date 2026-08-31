@@ -6,6 +6,7 @@ struct CameraScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var camera = CameraSessionController()
     @AppStorage("birdModeEnabled") private var birdModeEnabled = true
+    @AppStorage("stabilizationEnabled") private var stabilizationEnabled = true
     @State private var showsDiagnostics = false
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var compositionGrid = CompositionGrid.none
@@ -23,9 +24,13 @@ struct CameraScreen: View {
         .task {
             await camera.start()
             camera.setBirdModeEnabled(birdModeEnabled)
+            camera.setStabilizationMode(stabilizationEnabled ? .automatic : .off)
         }
         .onChange(of: birdModeEnabled) { _, enabled in
             camera.setBirdModeEnabled(enabled)
+        }
+        .onChange(of: stabilizationEnabled) { _, enabled in
+            camera.setStabilizationMode(enabled ? .automatic : .off)
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
@@ -148,6 +153,7 @@ private extension CameraScreen {
 
             Menu {
                 Toggle("照片记录位置", isOn: $camera.includesLocationMetadata)
+                Toggle("稳定：自动", isOn: $stabilizationEnabled)
             } label: {
                 Image(systemName: camera.includesLocationMetadata ? "location.fill" : "ellipsis")
                     .frame(width: 44, height: 44)
