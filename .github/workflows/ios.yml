@@ -32,14 +32,19 @@ jobs:
         run: xcodegen generate
 
       - name: Build
-        run: >-
-          xcodebuild
-          -project AICameraApp.xcodeproj
-          -scheme AICameraApp
-          -sdk iphonesimulator
-          -destination 'generic/platform=iOS Simulator'
-          CODE_SIGNING_ALLOWED=NO
-          build
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project AICameraApp.xcodeproj \
+            -scheme AICameraApp \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee xcodebuild.log || {
+              grep -E '(^|:) error:|SwiftCompile.*failed' xcodebuild.log |
+                while IFS= read -r line; do echo "::error::$line"; done
+              exit 1
+            }
 
       - name: Run unit tests
         run: >-
