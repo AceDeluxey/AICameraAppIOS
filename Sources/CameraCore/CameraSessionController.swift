@@ -33,6 +33,7 @@ final class CameraSessionController: ObservableObject {
             UserDefaults.standard.set(includesLocationMetadata, forKey: Self.locationPreferenceKey)
         }
     }
+
     @Published private(set) var thermalState = ProcessInfo.processInfo.thermalState
 
     let session = AVCaptureSession()

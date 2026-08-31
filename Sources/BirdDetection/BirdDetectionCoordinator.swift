@@ -26,7 +26,7 @@ actor BirdDetectionCoordinator {
             return nil
         }
         let duration = startedAt.duration(to: clock.now)
-        let milliseconds = Double(duration.components.seconds) * 1_000
+        let milliseconds = Double(duration.components.seconds) * 1000
             + Double(duration.components.attoseconds) / 1_000_000_000_000_000
         return await focusPipeline.process(
             observations: observations,

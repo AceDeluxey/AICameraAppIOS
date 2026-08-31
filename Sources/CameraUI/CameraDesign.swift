@@ -13,7 +13,9 @@ enum CompositionGrid: String, CaseIterable, Identifiable {
     case crosshair
     case diagonal
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var label: String {
         switch self {

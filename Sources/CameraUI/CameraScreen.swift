@@ -81,7 +81,6 @@ struct CameraScreen: View {
         .accessibilityLabel("相机取景器")
     }
 
-    @ViewBuilder
     private var birdTargetOverlay: some View {
         GeometryReader { geometry in
             if birdModeEnabled, let box = camera.birdBoundingBox {
@@ -97,7 +96,6 @@ struct CameraScreen: View {
         .allowsHitTesting(false)
     }
 
-    @ViewBuilder
     private var focusOverlay: some View {
         GeometryReader { geometry in
             if let point = manualFocusLocation {
