@@ -51,12 +51,12 @@ struct CameraScreen: View {
         HStack {
             controlButton(label: "相册", systemImage: "photo.on.rectangle")
             Spacer()
-            Button(action: {}) {
+            Button(action: {}, label: {
                 Circle()
                     .fill(Color(red: 1, green: 0.55, blue: 0.29))
                     .frame(width: 76, height: 76)
                     .overlay(Circle().stroke(.white, lineWidth: 4))
-            }
+            })
             .accessibilityLabel("拍照")
             Spacer()
             controlButton(label: "鸟模式", systemImage: "bird")
@@ -64,11 +64,11 @@ struct CameraScreen: View {
     }
 
     private func controlButton(label: String, systemImage: String) -> some View {
-        Button(action: {}) {
+        Button(action: {}, label: {
             Image(systemName: systemImage)
                 .frame(width: 52, height: 52)
                 .background(Color(red: 0.29, green: 0.25, blue: 0.23), in: Circle())
-        }
+        })
         .accessibilityLabel(label)
     }
 }
