@@ -24,16 +24,15 @@ final class CameraSessionController: ObservableObject {
         guard state != .running else { return }
         state = .requestingPermission
 
-        let granted: Bool
-        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        let granted = switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
-            granted = true
+            true
         case .notDetermined:
-            granted = await AVCaptureDevice.requestAccess(for: .video)
+            await AVCaptureDevice.requestAccess(for: .video)
         case .denied, .restricted:
-            granted = false
+            false
         @unknown default:
-            granted = false
+            false
         }
 
         guard granted else {
@@ -59,12 +58,12 @@ final class CameraSessionController: ObservableObject {
             guard let self else { return }
 
             do {
-                if !self.isConfigured {
-                    try self.configureSession()
-                    self.isConfigured = true
+                if !isConfigured {
+                    try configureSession()
+                    isConfigured = true
                 }
-                if !self.session.isRunning {
-                    self.session.startRunning()
+                if !session.isRunning {
+                    session.startRunning()
                 }
                 Task { @MainActor in
                     self.state = .running
@@ -115,11 +114,11 @@ private enum CameraError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noBackCamera:
-            return "未检测到后置相机"
+            "未检测到后置相机"
         case .cannotAddInput:
-            return "无法连接相机输入"
+            "无法连接相机输入"
         case .cannotAddPhotoOutput:
-            return "无法创建拍照输出"
+            "无法创建拍照输出"
         }
     }
 }

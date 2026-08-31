@@ -1,6 +1,6 @@
+@testable import AICameraApp
 import CoreGraphics
 import XCTest
-@testable import AICameraApp
 
 final class MainTargetSelectorTests: XCTestCase {
     func testSelectsHighestConfidenceObservation() {
