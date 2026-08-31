@@ -20,7 +20,7 @@ jobs:
         run: swiftformat Sources Tests UITests --lint
 
       - name: Run SwiftLint
-        run: swiftlint lint --strict
+        run: swiftlint lint --strict --reporter github-actions-logging
 
       - name: Test model conversion tooling
         run: |
