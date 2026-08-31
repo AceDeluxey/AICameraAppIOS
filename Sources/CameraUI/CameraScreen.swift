@@ -86,24 +86,6 @@ struct CameraScreen: View {
     }
 }
 
-#if DEBUG
-    private struct CameraUITestState {
-        let isEnabled: Bool
-        let cameraState: CameraSessionController.State?
-
-        init(processArguments: [String]) {
-            isEnabled = processArguments.contains("--ui-testing")
-            if processArguments.contains("--camera-unauthorized") {
-                cameraState = .unauthorized
-            } else if isEnabled {
-                cameraState = .running
-            } else {
-                cameraState = nil
-            }
-        }
-    }
-#endif
-
 private extension CameraScreen {
     private func preview(in size: CGSize) -> some View {
         let width = size.width
@@ -399,29 +381,6 @@ private extension CameraScreen {
     private func openSettings() {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
-    }
-
-    private func mappedBirdBox(_ box: CGRect, in size: CGSize) -> CGRect {
-        let imageSize = camera.birdImageSize == .zero
-            ? CGSize(width: 3, height: 4)
-            : camera.birdImageSize
-        let bounds = CGRect(origin: .zero, size: size)
-        let topLeft = BirdFocusCoordinateMapper.layerPoint(
-            fromNormalizedImagePoint: CGPoint(x: box.minX, y: box.minY),
-            imageSize: imageSize,
-            in: bounds
-        )
-        let bottomRight = BirdFocusCoordinateMapper.layerPoint(
-            fromNormalizedImagePoint: CGPoint(x: box.maxX, y: box.maxY),
-            imageSize: imageSize,
-            in: bounds
-        )
-        return CGRect(
-            x: topLeft.x,
-            y: topLeft.y,
-            width: bottomRight.x - topLeft.x,
-            height: bottomRight.y - topLeft.y
-        ).intersection(bounds)
     }
 }
 
