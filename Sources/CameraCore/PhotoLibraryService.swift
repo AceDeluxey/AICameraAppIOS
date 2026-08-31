@@ -8,7 +8,7 @@ struct PhotoLibraryService: Sendable {
             throw PhotoLibraryError.unauthorized
         }
 
-        try await withCheckedThrowingContinuation { continuation in
+        let _: Void = try await withCheckedThrowingContinuation { continuation in
             PHPhotoLibrary.shared().performChanges {
                 let request = PHAssetCreationRequest.forAsset()
                 request.creationDate = Date()
