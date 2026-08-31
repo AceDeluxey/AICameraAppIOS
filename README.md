@@ -6,7 +6,9 @@
 
 - 产品需求：[docs/PRD.md](docs/PRD.md)
 - 开发任务：[docs/TASKLIST.md](docs/TASKLIST.md)
-- 对照产品：`/home/ubuntu/AICameraApp`（Android）
+- 开发协作规则：[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+- Android 原始压缩包：`/home/ubuntu/birdCamera/AICameraApp.rar`（只读参考，不直接修改或执行）
+- Android 已解压工程：`/home/ubuntu/AICameraApp`（功能、交互、视觉和模型迁移的对照基线）
 
 ## 首版原则
 

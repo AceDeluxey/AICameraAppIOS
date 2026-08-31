@@ -4,6 +4,9 @@
 > 状态：首版立项稿  
 > 日期：2026-08-31  
 > 对照版本：Android `/home/ubuntu/AICameraApp` 现有实现
+> 原始来源：`/home/ubuntu/birdCamera/AICameraApp.rar`
+
+Android 原始压缩包仅用于来源追溯，不直接执行或在其中开发。需求核对、功能对齐和资产清点统一以已解压工程 `/home/ubuntu/AICameraApp` 为基线；开始迁移前仍需确认代码、模型、标签、地理数据及品牌资产的商业复用授权。
 
 ## 1. 产品结论
 

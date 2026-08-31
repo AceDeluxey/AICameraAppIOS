@@ -8,12 +8,14 @@
 
 - 状态统一使用：`[ ]` 未开始、`[x]` 已完成；受阻任务在行末标记 `BLOCKED` 并写明原因。
 - 每个里程碑达到“完成标准”并通过相应验证后，单独创建 Git 提交。
+- Git 拉取、阶段性提交和自动推送规则以 [`docs/DEVELOPMENT.md`](DEVELOPMENT.md) 为准。
 - 相机、对焦、防抖和性能结论只认可真机结果；模拟器只用于普通 UI 和状态逻辑测试。
 - AI 推理不得阻塞预览、人工对焦或快门。
 - 硬件能力必须运行时探测，不按 iPhone 型号硬编码镜头、帧率和防抖能力。
 
 ## 开工前输入
 
+- [x] 确认 Android 原始包位于 `/home/ubuntu/birdCamera/AICameraApp.rar`，已解压对照工程位于 `/home/ubuntu/AICameraApp`
 - [ ] 确认用于开发的 Mac 型号、macOS 和 Xcode 版本
 - [ ] 确认首台测试 iPhone 型号与 iOS 版本
 - [ ] 确认至少一台带长焦的 iPhone Pro 可持续用于真机测试
