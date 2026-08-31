@@ -150,14 +150,13 @@ struct MainTargetTracker: Sendable {
     }
 
     private mutating func confirm(_ selected: BirdObservation) -> MainTargetTrackingResult {
-        let observation: BirdObservation
-        if let confirmedObservation {
-            observation = confirmedObservation.smoothed(
+        let observation: BirdObservation = if let confirmedObservation {
+            confirmedObservation.smoothed(
                 toward: selected,
                 factor: configuration.smoothingFactor
             )
         } else {
-            observation = selected
+            selected
         }
 
         candidate = nil
