@@ -2,7 +2,7 @@
 
 > 对应 PRD：[`docs/PRD.md`](PRD.md)  
 > 更新日期：2026-08-31  
-> 当前阶段：M0 工程骨架（进行中；等待 macOS CI 和真机验证）
+> 当前阶段：M0 工程骨架（CI 已通过；等待签名和真机验证）
 
 ## 使用规则
 
@@ -33,7 +33,7 @@
 
 ### M0.1 项目初始化
 
-- [ ] 使用 Swift 创建 iOS App 工程（XcodeGen 定义和源码已完成，待 macOS 生成及编译）
+- [x] 使用 Swift 创建 iOS App 工程（XcodeGen 定义，已在 macOS CI 生成并编译）
 - [ ] 确定最低 iOS 版本，以现有测试机和目标用户覆盖率为依据（当前暂定 iOS 17）
 - [ ] 设置正式 Bundle ID、版本号与显示名称（当前暂定 `com.acedeluxey.aicamera`、0.1.0、AICameraApp）
 - [x] 建立 Debug、Release 配置
@@ -58,7 +58,7 @@
 - [x] 创建单元测试 Target
 - [x] 创建 UI 测试 Target
 - [x] 接入 Swift 格式化与静态检查
-- [ ] 配置 CI：编译、单元测试、静态检查（工作流已创建，待首次 macOS 运行通过）
+- [x] 配置 CI：编译、单元测试、静态检查
 - [x] 加入基础日志，Release 默认不输出位置或媒体敏感数据
 - [ ] 在至少一台真机完成空项目安装和启动 BLOCKED：当前服务器无 macOS/Xcode，需 Mac 和 iPhone
 
@@ -304,6 +304,11 @@
 
 ## 当前下一步
 
-1. 补齐“开工前输入”的设备、账号与资产授权信息。
-2. 创建 Xcode 工程与 M0 模块骨架。
-3. 在首台真机完成相机预览和能力探测，不先开发完整 UI。
+1. 补齐 Mac、iPhone、Apple Developer 账号、正式 Bundle ID 和资产授权信息。
+2. 在首台真机完成工程签名、安装、相机权限和基础预览验收，关闭 M0。
+3. 进入 M1 相机能力探测，不先开发完整 UI。
+
+### 最近验证
+
+- 2026-08-31：GitHub macOS CI 已通过 SwiftFormat、SwiftLint、XcodeGen 工程生成、iOS Simulator 编译和 2 项单元测试。
+- CI 运行：`https://github.com/AceDeluxey/AICameraAppIOS/actions/runs/33353954384`
