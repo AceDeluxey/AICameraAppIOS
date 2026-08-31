@@ -29,11 +29,14 @@ final class VideoRecordingProcessor: NSObject, AVCaptureFileOutputRecordingDeleg
         from _: [AVCaptureConnection],
         error: (any Error)?
     ) {
-        if let error = error as NSError?,
-           error.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool != true {
-            completion(.failure(error))
-        } else {
-            completion(.success(outputFileURL))
+        if let error = error as NSError? {
+            let finishedSuccessfully = error.userInfo[AVErrorRecordingSuccessfullyFinishedKey]
+                as? Bool == true
+            if !finishedSuccessfully {
+                completion(.failure(error))
+                return
+            }
         }
+        completion(.success(outputFileURL))
     }
 }

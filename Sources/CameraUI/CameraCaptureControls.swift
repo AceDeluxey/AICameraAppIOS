@@ -66,7 +66,6 @@ struct VideoRecordingStatusView: View {
     let status: VideoRecordingStatus
     let includesAudio: Bool
 
-    @ViewBuilder
     var body: some View {
         switch status {
         case .preparing:
