@@ -51,7 +51,7 @@ final class CoreMLEfficientDetDetector: BirdDetecting, @unchecked Sendable {
         let input = try MLDictionaryFeatureProvider(dictionary: [
             featureNames.input: MLFeatureValue(pixelBuffer: resizedBuffer),
         ])
-        let prediction = try model.prediction(from: input)
+        let prediction = try await model.prediction(from: input)
         let rawOutput = try rawOutput(from: prediction)
         return postprocessor.observations(from: rawOutput)
     }
