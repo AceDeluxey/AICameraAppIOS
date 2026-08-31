@@ -30,6 +30,8 @@
     <string>用于在视频录制时采集同期声音。</string>
     <key>NSPhotoLibraryAddUsageDescription</key>
     <string>用于将拍摄的照片和视频保存到系统照片。</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>用于选择和查看照片。</string>
     <key>UIApplicationSceneManifest</key>
     <dict>
         <key>UIApplicationSupportsMultipleScenes</key>

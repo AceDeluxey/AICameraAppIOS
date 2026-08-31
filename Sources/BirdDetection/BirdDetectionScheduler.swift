@@ -3,7 +3,7 @@ import Foundation
 
 actor BirdDetectionScheduler {
     private let detector: any BirdDetecting
-    private let minimumInterval: TimeInterval
+    private var minimumInterval: TimeInterval
 
     private var isProcessing = false
     private var lastAcceptedTimestamp: TimeInterval?
@@ -28,6 +28,10 @@ actor BirdDetectionScheduler {
         defer { isProcessing = false }
 
         return try await detector.detectBirds(in: pixelBuffer)
+    }
+
+    func setMinimumInterval(_ interval: TimeInterval) {
+        minimumInterval = max(0, interval)
     }
 
     private func shouldThrottle(_ timestamp: TimeInterval) -> Bool {

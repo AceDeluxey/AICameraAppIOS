@@ -35,6 +35,28 @@ final class BirdDetectionSchedulerTests: XCTestCase {
         XCTAssertEqual(callCount, 2)
     }
 
+    func testMinimumIntervalCanBeRaisedForThermalLoad() async throws {
+        let detector = StubBirdDetector(delayNanoseconds: 0)
+        let scheduler = BirdDetectionScheduler(detector: detector, minimumInterval: 0)
+        let pixelBuffer = try makePixelBuffer()
+
+        _ = try await scheduler.submit(pixelBuffer: pixelBuffer, presentationTimeSeconds: 1)
+        await scheduler.setMinimumInterval(0.5)
+        let throttled = try await scheduler.submit(
+            pixelBuffer: pixelBuffer,
+            presentationTimeSeconds: 1.2
+        )
+        let accepted = try await scheduler.submit(
+            pixelBuffer: pixelBuffer,
+            presentationTimeSeconds: 1.5
+        )
+
+        XCTAssertNil(throttled)
+        XCTAssertNotNil(accepted)
+        let callCount = await detector.callCount
+        XCTAssertEqual(callCount, 2)
+    }
+
     private func makePixelBuffer() throws -> CVPixelBuffer {
         var pixelBuffer: CVPixelBuffer?
         let status = CVPixelBufferCreate(
