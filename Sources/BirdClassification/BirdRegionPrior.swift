@@ -89,23 +89,23 @@ final class BirdRegionPrior: BirdPriorWeighting, @unchecked Sendable {
         }
     }
 
-    private static func contains(_ x: Double, _ y: Double, ring: [CGPoint]) -> Bool {
+    private static func contains(_ longitude: Double, _ latitude: Double, ring: [CGPoint]) -> Bool {
         guard ring.count >= 4 else { return false }
         let bounds = ring.reduce(into: CGRect.null) { result, point in
             result = result.union(CGRect(origin: point, size: .zero))
         }
-        guard bounds.contains(CGPoint(x: x, y: y)) else { return false }
+        guard bounds.contains(CGPoint(x: longitude, y: latitude)) else { return false }
 
         var inside = false
         var previous = ring.count - 1
         for index in ring.indices {
             let currentPoint = ring[index]
             let previousPoint = ring[previous]
-            if (currentPoint.y > y) != (previousPoint.y > y) {
+            if (currentPoint.y > latitude) != (previousPoint.y > latitude) {
                 let intersection = (previousPoint.x - currentPoint.x)
-                    * (y - currentPoint.y) / (previousPoint.y - currentPoint.y)
+                    * (latitude - currentPoint.y) / (previousPoint.y - currentPoint.y)
                     + currentPoint.x
-                if x < intersection {
+                if longitude < intersection {
                     inside.toggle()
                 }
             }
@@ -131,36 +131,50 @@ private extension BirdRegionPrior {
             index += 1
             switch fields.first {
             case "C":
-                guard index < lines.count, let count = Int(lines[index]) else {
-                    throw BirdRegionPriorError.invalidPriorRow
-                }
-                index += 1
-                for _ in 0 ..< count {
-                    guard index < lines.count,
-                          let entry = parseCountryRow(lines[index])
-                    else { throw BirdRegionPriorError.invalidPriorRow }
-                    country[entry.index] = entry.level
-                    index += 1
-                }
+                country = try parseCountryBlock(lines, index: &index)
             case "R":
-                guard fields.count >= 4, let count = Int(fields[3]) else {
-                    throw BirdRegionPriorError.invalidPriorRow
-                }
-                let code = String(fields[1])
-                var table: [Int: [UInt8]] = [:]
-                for _ in 0 ..< count {
-                    guard index < lines.count,
-                          let entry = parseRegionRow(lines[index])
-                    else { throw BirdRegionPriorError.invalidPriorRow }
-                    table[entry.index] = entry.levels
-                    index += 1
-                }
-                regionTables[code] = table
+                let block = try parseRegionBlock(fields, lines: lines, index: &index)
+                regionTables[block.code] = block.table
             default:
                 continue
             }
         }
         return (country, regionTables)
+    }
+
+    static func parseCountryBlock(_ lines: [String], index: inout Int) throws -> [Int: UInt8] {
+        guard index < lines.count, let count = Int(lines[index]) else {
+            throw BirdRegionPriorError.invalidPriorRow
+        }
+        index += 1
+        var country: [Int: UInt8] = [:]
+        for _ in 0 ..< count {
+            guard index < lines.count, let entry = parseCountryRow(lines[index]) else {
+                throw BirdRegionPriorError.invalidPriorRow
+            }
+            country[entry.index] = entry.level
+            index += 1
+        }
+        return country
+    }
+
+    static func parseRegionBlock(
+        _ fields: [Substring],
+        lines: [String],
+        index: inout Int
+    ) throws -> (code: String, table: [Int: [UInt8]]) {
+        guard fields.count >= 4, let count = Int(fields[3]) else {
+            throw BirdRegionPriorError.invalidPriorRow
+        }
+        var table: [Int: [UInt8]] = [:]
+        for _ in 0 ..< count {
+            guard index < lines.count, let entry = parseRegionRow(lines[index]) else {
+                throw BirdRegionPriorError.invalidPriorRow
+            }
+            table[entry.index] = entry.levels
+            index += 1
+        }
+        return (String(fields[1]), table)
     }
 
     static func parseRegions(_ contents: String) throws -> [Region] {
