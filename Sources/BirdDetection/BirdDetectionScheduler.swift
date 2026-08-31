@@ -19,10 +19,7 @@ actor BirdDetectionScheduler {
     ) async throws -> [BirdObservation]? {
         guard !isProcessing else { return nil }
 
-        if let lastAcceptedTimestamp,
-           presentationTimeSeconds >= lastAcceptedTimestamp,
-           presentationTimeSeconds - lastAcceptedTimestamp < minimumInterval
-        {
+        if shouldThrottle(presentationTimeSeconds) {
             return nil
         }
 
@@ -31,5 +28,12 @@ actor BirdDetectionScheduler {
         defer { isProcessing = false }
 
         return try await detector.detectBirds(in: pixelBuffer)
+    }
+
+    private func shouldThrottle(_ timestamp: TimeInterval) -> Bool {
+        guard let lastAcceptedTimestamp, timestamp >= lastAcceptedTimestamp else {
+            return false
+        }
+        return timestamp - lastAcceptedTimestamp < minimumInterval
     }
 }
