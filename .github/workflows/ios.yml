@@ -17,7 +17,7 @@ jobs:
         run: brew install xcodegen swiftformat swiftlint
 
       - name: Check formatting
-        run: swiftformat --lint Sources Tests UITests
+        run: swiftformat Sources Tests UITests --lint
 
       - name: Run SwiftLint
         run: swiftlint lint --strict

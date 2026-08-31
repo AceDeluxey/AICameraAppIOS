@@ -22,7 +22,7 @@ open AICameraApp.xcodeproj
 ## 本地检查
 
 ```bash
-swiftformat --lint Sources Tests UITests
+swiftformat Sources Tests UITests --lint
 swiftlint lint --strict
 xcodegen generate
 xcodebuild \
