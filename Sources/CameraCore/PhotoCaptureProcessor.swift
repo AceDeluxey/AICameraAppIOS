@@ -46,7 +46,7 @@ final class PhotoCaptureProcessor: NSObject, AVCapturePhotoCaptureDelegate {
         }
 
         let landscape = size.width >= size.height
-        let units: CGSize = switch (aspectRatio, landscape) {
+        let units = switch (aspectRatio, landscape) {
         case (.fourByThree, true):
             CGSize(width: 4, height: 3)
         case (.fourByThree, false):
