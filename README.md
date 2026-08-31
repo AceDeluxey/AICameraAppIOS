@@ -5,6 +5,7 @@
 当前阶段：产品定义与真机技术验证。
 
 - 产品需求：[docs/PRD.md](docs/PRD.md)
+- 开发任务：[docs/TASKLIST.md](docs/TASKLIST.md)
 - 对照产品：`/home/ubuntu/AICameraApp`（Android）
 
 ## 首版原则
@@ -13,4 +14,3 @@
 2. 与 Android 版保持品牌、布局和操作逻辑一致；遵循 iOS 权限、相册和相机交互习惯。
 3. 所有相机能力以真机动态探测结果为准，不按机型名称硬编码。
 4. 先验证识别、追踪对焦和长焦防抖，再扩展专业参数与鸟种识别。
-
