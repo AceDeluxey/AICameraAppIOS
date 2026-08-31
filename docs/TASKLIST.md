@@ -84,14 +84,14 @@
 
 ### M1.2 鸟体检测路线
 
-- [ ] 固化 Android EfficientDet 模型、标签、预处理和后处理基线
+- [x] 固化 Android EfficientDet 模型、标签、预处理和后处理基线（见 `docs/M1_DETECTION_BASELINE.md`）
 - [ ] 准备固定验证集：不同大小、光线、背景、遮挡和无鸟负样本
 - [ ] 尝试转换为 Core ML，记录转换参数与校验值
 - [ ] 验证 Core ML 输入尺寸、色彩通道、归一化和输出解释一致
 - [ ] 评估 iOS ONNX Runtime 备选路线
 - [ ] 对比两条路线的检测准确率、延迟、内存、功耗和包体
 - [ ] 选定首版推理路线并记录决策依据
-- [ ] 实现后台帧调度，不阻塞相机队列与主线程
+- [x] 实现后台帧调度，不阻塞相机队列与主线程
 
 验收：典型场景检测结果延迟不高于 250ms；连续运行 10 分钟无崩溃或持续内存增长。
 
@@ -314,3 +314,5 @@
 - CI 运行：`https://github.com/AceDeluxey/AICameraAppIOS/actions/runs/33353954384`
 - 2026-08-31：M1.1 相机能力探测、Debug 报告及报告序列化测试通过 macOS CI。
 - CI 运行：`https://github.com/AceDeluxey/AICameraAppIOS/actions/runs/33355055979`
+- 2026-08-31：M1.2 Android 检测基线、独立帧输出、单推理丢帧与节流测试通过 macOS CI。
+- CI 运行：`https://github.com/AceDeluxey/AICameraAppIOS/actions/runs/33355451012`
