@@ -242,7 +242,12 @@ private extension CameraScreen {
     private var captureModePicker: some View {
         VStack(spacing: 8) {
             if camera.captureMode == .video, !camera.availableVideoFormats.isEmpty {
-                videoFormatPicker
+                VideoFormatPicker(
+                    options: camera.availableVideoFormats,
+                    selectedOption: camera.selectedVideoFormat,
+                    isDisabled: camera.videoRecordingStatus.isBusy,
+                    selectOption: camera.selectVideoFormat
+                )
             }
             CaptureModePicker(
                 selectedMode: camera.captureMode,
@@ -250,24 +255,6 @@ private extension CameraScreen {
                 selectMode: camera.setCaptureMode
             )
         }
-    }
-
-    private var videoFormatPicker: some View {
-        Menu {
-            ForEach(camera.availableVideoFormats) { option in
-                Button(option.displayName) { camera.selectVideoFormat(option) }
-            }
-        } label: {
-            Text(camera.selectedVideoFormat?.displayName ?? "选择视频档位")
-                .font(.subheadline.bold().monospacedDigit())
-                .padding(.horizontal, 14)
-                .frame(minHeight: 44)
-                .background(CameraDesign.overlayBackground, in: Capsule())
-        }
-        .foregroundStyle(.white)
-        .disabled(camera.videoRecordingStatus.isBusy)
-        .accessibilityLabel("视频分辨率与帧率")
-        .accessibilityValue(camera.selectedVideoFormat?.displayName ?? "无可用档位")
     }
 
     @ViewBuilder

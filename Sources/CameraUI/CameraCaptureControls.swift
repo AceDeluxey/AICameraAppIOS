@@ -27,6 +27,31 @@ struct CaptureModePicker: View {
     }
 }
 
+struct VideoFormatPicker: View {
+    let options: [VideoFormatOption]
+    let selectedOption: VideoFormatOption?
+    let isDisabled: Bool
+    let selectOption: (VideoFormatOption) -> Void
+
+    var body: some View {
+        Menu {
+            ForEach(options) { option in
+                Button(option.displayName) { selectOption(option) }
+            }
+        } label: {
+            Text(selectedOption?.displayName ?? "选择视频档位")
+                .font(.subheadline.bold().monospacedDigit())
+                .padding(.horizontal, 14)
+                .frame(minHeight: 44)
+                .background(CameraDesign.overlayBackground, in: Capsule())
+        }
+        .foregroundStyle(.white)
+        .disabled(isDisabled)
+        .accessibilityLabel("视频分辨率与帧率")
+        .accessibilityValue(selectedOption?.displayName ?? "无可用档位")
+    }
+}
+
 struct CaptureShutterButton: View {
     let mode: CameraCaptureMode
     let recordingStatus: VideoRecordingStatus

@@ -153,9 +153,10 @@ enum VideoFormatOptionBuilder {
         fullPixelSize: (Int32, Int32)?
     ) -> VideoResolution? {
         let dimensions = (max(width, height), min(width, height))
-        if let fullPixelSize,
-           dimensions == (max(fullPixelSize.0, fullPixelSize.1), min(fullPixelSize.0, fullPixelSize.1))
-        {
+        let normalizedFullPixelSize = fullPixelSize.map {
+            (max($0.0, $0.1), min($0.0, $0.1))
+        }
+        if let normalizedFullPixelSize, dimensions == normalizedFullPixelSize {
             return .fullPixel
         }
         return switch dimensions {
