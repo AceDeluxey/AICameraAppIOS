@@ -1,0 +1,24 @@
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.moved-aside
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Local configuration and secrets
+*.mobileprovision
+*.p12
+*.cer
+Secrets.xcconfig
+
+# macOS
+.DS_Store
+
+# Model conversion caches
+Tools/.cache/
+
