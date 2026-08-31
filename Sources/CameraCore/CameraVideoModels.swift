@@ -126,7 +126,9 @@ enum VideoFormatOptionBuilder {
         return options.sorted {
             let lhsRank = VideoResolution.allCases.firstIndex(of: $0.resolution) ?? .max
             let rhsRank = VideoResolution.allCases.firstIndex(of: $1.resolution) ?? .max
-            if lhsRank != rhsRank { return lhsRank < rhsRank }
+            if lhsRank != rhsRank {
+                return lhsRank < rhsRank
+            }
             return $0.framesPerSecond < $1.framesPerSecond
         }
     }
