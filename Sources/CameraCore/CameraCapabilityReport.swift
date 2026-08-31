@@ -22,7 +22,8 @@ struct CameraCapabilityReport: Codable, Equatable, Sendable {
             lines.append("  Type: \(device.type) | Virtual: \(device.isVirtual)")
             lines.append("  Constituents: \(device.constituentDeviceIDs.joined(separator: ", "))")
             lines.append("  Focus: \(device.focusModes.joined(separator: ", ")) | POI: \(device.supportsFocusPoint)")
-            lines.append("  Exposure: \(device.exposureModes.joined(separator: ", ")) | POI: \(device.supportsExposurePoint)")
+            let exposureModes = device.exposureModes.joined(separator: ", ")
+            lines.append("  Exposure: \(exposureModes) | POI: \(device.supportsExposurePoint)")
             lines.append("  Zoom: \(device.minimumZoomFactor)-\(device.maximumZoomFactor)")
             lines.append("  Formats: \(device.formats.count)")
 
