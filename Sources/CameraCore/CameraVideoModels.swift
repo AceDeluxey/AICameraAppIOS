@@ -94,14 +94,7 @@ enum VideoFormatOptionBuilder {
 
     static func options(from descriptors: [VideoFormatDescriptor]) -> [VideoFormatOption] {
         guard !descriptors.isEmpty else { return [] }
-        let fullPixelSize = descriptors
-            .filter { descriptor in
-                let longEdge = Double(max(descriptor.width, descriptor.height))
-                let shortEdge = Double(min(descriptor.width, descriptor.height))
-                return shortEdge > 0 && abs(longEdge / shortEdge - 4.0 / 3.0) < 0.04
-            }
-            .max { pixelCount($0) < pixelCount($1) }
-            .map { ($0.width, $0.height) }
+        let fullPixelSize = fullPixelSize(from: descriptors)
 
         var options = Set<VideoFormatOption>()
         for descriptor in descriptors {
@@ -111,16 +104,7 @@ enum VideoFormatOptionBuilder {
                 fullPixelSize: fullPixelSize
             ) else { continue }
 
-            for frameRate in supportedFrameRates where descriptor.frameRateRanges.contains(where: {
-                $0.lowerBound <= Double(frameRate) && $0.upperBound >= Double(frameRate)
-            }) {
-                options.insert(VideoFormatOption(
-                    resolution: resolution,
-                    width: descriptor.width,
-                    height: descriptor.height,
-                    framesPerSecond: frameRate
-                ))
-            }
+            options.formUnion(options(for: descriptor, resolution: resolution))
         }
 
         return options.sorted {
@@ -130,6 +114,36 @@ enum VideoFormatOptionBuilder {
                 return lhsRank < rhsRank
             }
             return $0.framesPerSecond < $1.framesPerSecond
+        }
+    }
+
+    private static func fullPixelSize(
+        from descriptors: [VideoFormatDescriptor]
+    ) -> (Int32, Int32)? {
+        descriptors
+            .filter { descriptor in
+                let longEdge = Double(max(descriptor.width, descriptor.height))
+                let shortEdge = Double(min(descriptor.width, descriptor.height))
+                return shortEdge > 0 && abs(longEdge / shortEdge - 4.0 / 3.0) < 0.04
+            }
+            .max { pixelCount($0) < pixelCount($1) }
+            .map { ($0.width, $0.height) }
+    }
+
+    private static func options(
+        for descriptor: VideoFormatDescriptor,
+        resolution: VideoResolution
+    ) -> [VideoFormatOption] {
+        supportedFrameRates.compactMap { frameRate in
+            guard descriptor.frameRateRanges.contains(where: {
+                $0.lowerBound <= Double(frameRate) && $0.upperBound >= Double(frameRate)
+            }) else { return nil }
+            return VideoFormatOption(
+                resolution: resolution,
+                width: descriptor.width,
+                height: descriptor.height,
+                framesPerSecond: frameRate
+            )
         }
     }
 
