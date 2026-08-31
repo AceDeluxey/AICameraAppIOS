@@ -42,6 +42,7 @@
 ## 尚未完成
 
 - 从 TFLite 转换并验证 Core ML 模型。
+- iOS 已实现与 Android 参数一致的输出解析、bird/cat 双阈值、NMS、单主目标裁决和转正框逆旋转映射；待转换模型接入后做逐样本校验。
 - 接入 iOS ONNX Runtime/TFLite 的备选实测。
 - 固定验证集与 Android/iOS 逐样本输出对照。
 - 真机统计端到端延迟、内存、功耗和温度。
