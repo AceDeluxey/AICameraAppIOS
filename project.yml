@@ -23,10 +23,9 @@ targets:
       - Sources
     resources:
       - Resources
-    info:
-      path: Config/Info.plist
     settings:
       base:
+        INFOPLIST_FILE: Config/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.acedeluxey.aicamera
         PRODUCT_NAME: AICameraApp
         TARGETED_DEVICE_FAMILY: "1"
