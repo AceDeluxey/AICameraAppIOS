@@ -83,7 +83,7 @@ extension CameraSessionController {
     }
 
     func applyBirdFocusDecision(_ decision: BirdFocusDecision) {
-        guard let activeDevice else { return }
+        guard controlMode == .automatic, let activeDevice else { return }
         do {
             switch decision {
             case .none:

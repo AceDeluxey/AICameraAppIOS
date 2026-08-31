@@ -11,7 +11,11 @@ extension CameraSessionController {
         clearCaptureMessage()
         clearVideoMessage()
         sessionQueue.async { [weak self] in
-            self?.applyStabilization()
+            guard let self else { return }
+            applyStabilization()
+            if let activeDevice {
+                restoreControlMode(for: activeDevice)
+            }
         }
     }
 
@@ -204,6 +208,7 @@ extension CameraSessionController {
             activeDevice.activeVideoMinFrameDuration = duration
             activeDevice.activeVideoMaxFrameDuration = duration
             activeDevice.unlockForConfiguration()
+            restoreControlMode(for: activeDevice)
             applyStabilization()
             Task { @MainActor in self.selectedVideoFormat = option }
         } catch {

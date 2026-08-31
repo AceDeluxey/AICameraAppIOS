@@ -26,7 +26,7 @@ extension CameraSessionController {
             let settings = AVCapturePhotoSettings(format: [
                 AVVideoCodecKey: AVVideoCodecType.jpeg,
             ])
-            settings.photoQualityPrioritization = .quality
+            settings.photoQualityPrioritization = controlMode == .professional ? .speed : .quality
             if let connection = photoOutput.connection(with: .video) {
                 if connection.isVideoRotationAngleSupported(90) {
                     connection.videoRotationAngle = 90
@@ -107,6 +107,7 @@ extension CameraSessionController {
                 activeDeviceID = device.uniqueID
                 updateLensState(for: device)
                 refreshVideoFormats(for: device)
+                restoreControlMode(for: device)
             } else {
                 session.addInput(currentInput)
             }

@@ -33,6 +33,19 @@ final class CameraSessionController: ObservableObject {
     @Published var birdImageSize: CGSize = .zero
     @Published var birdModeStatus = BirdModeStatus.disabled
     @Published var aspectRatio: PhotoAspectRatio = .fourByThree
+    @Published var controlMode: CameraControlMode {
+        didSet {
+            UserDefaults.standard.set(controlMode.rawValue, forKey: Self.controlModePreferenceKey)
+        }
+    }
+    @Published var professionalCapabilities: CameraProfessionalCapabilities?
+    @Published var professionalSettings = CameraProfessionalSettings(
+        exposureBias: 0,
+        iso: 100,
+        exposureDuration: 1 / 60,
+        lensPosition: 0.5
+    )
+    @Published var professionalStatus = CameraProfessionalStatus.ready
     @Published var includesLocationMetadata: Bool {
         didSet {
             UserDefaults.standard.set(includesLocationMetadata, forKey: Self.locationPreferenceKey)
@@ -65,9 +78,13 @@ final class CameraSessionController: ObservableObject {
     var birdDetectionCoordinator: BirdDetectionCoordinator?
     var isBirdModeEnabled = false
     static let locationPreferenceKey = "includesPhotoLocationMetadata"
+    static let controlModePreferenceKey = "cameraControlMode"
 
     init() {
         includesLocationMetadata = UserDefaults.standard.bool(forKey: Self.locationPreferenceKey)
+        controlMode = CameraControlMode(
+            rawValue: UserDefaults.standard.string(forKey: Self.controlModePreferenceKey) ?? ""
+        ) ?? .automatic
         UIDevice.current.isBatteryMonitoringEnabled = true
         observeSessionNotifications()
     }
@@ -117,6 +134,7 @@ final class CameraSessionController: ObservableObject {
 
     @MainActor
     func focus(at devicePoint: CGPoint) {
+        guard controlMode == .automatic else { return }
         focusPoint = devicePoint
         let timestamp = CACurrentMediaTime()
         if let birdDetectionCoordinator {
@@ -262,6 +280,7 @@ final class CameraSessionController: ObservableObject {
         }
         updateLensState(for: device)
         refreshVideoFormats(for: device)
+        restoreControlMode(for: device)
     }
 }
 

@@ -133,6 +133,7 @@ private extension CameraScreen {
             statusView
             Spacer()
             captureModePicker
+            professionalControls
             lensControls
             zoomControl
             bottomControls
@@ -195,6 +196,12 @@ private extension CameraScreen {
             )
         } else if birdModeEnabled, let birdMessage {
             statusPill(birdMessage)
+        } else if case let .failed(message) = camera.professionalStatus {
+            statusPill(message)
+        } else if case let .unavailable(message) = camera.professionalStatus,
+                  camera.controlMode == .professional
+        {
+            statusPill(message)
         } else {
             switch camera.state {
             case .unauthorized:
@@ -249,10 +256,33 @@ private extension CameraScreen {
                     selectOption: camera.selectVideoFormat
                 )
             }
-            CaptureModePicker(
-                selectedMode: camera.captureMode,
+            HStack(spacing: 8) {
+                CameraControlModePicker(
+                    selectedMode: camera.controlMode,
+                    supportsProfessionalMode: camera.professionalCapabilities?.supportsProfessionalMode == true,
+                    isDisabled: camera.videoRecordingStatus.isBusy,
+                    selectMode: camera.setControlMode
+                )
+                CaptureModePicker(
+                    selectedMode: camera.captureMode,
+                    isDisabled: camera.videoRecordingStatus.isBusy,
+                    selectMode: camera.setCaptureMode
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var professionalControls: some View {
+        if let capabilities = camera.professionalCapabilities,
+           capabilities.exposureBiasRange != nil || camera.controlMode == .professional
+        {
+            CameraProfessionalControls(
+                mode: camera.controlMode,
+                capabilities: capabilities,
+                settings: camera.professionalSettings,
                 isDisabled: camera.videoRecordingStatus.isBusy,
-                selectMode: camera.setCaptureMode
+                setControl: camera.setProfessionalControl
             )
         }
     }
