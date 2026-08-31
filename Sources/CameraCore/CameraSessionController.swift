@@ -121,9 +121,10 @@ final class CameraSessionController: ObservableObject {
                 AVVideoCodecKey: AVVideoCodecType.jpeg,
             ])
             settings.photoQualityPrioritization = .quality
-            if let connection = photoOutput.connection(with: .video),
-               connection.isVideoRotationAngleSupported(90) {
-                connection.videoRotationAngle = 90
+            if let connection = photoOutput.connection(with: .video) {
+                if connection.isVideoRotationAngleSupported(90) {
+                    connection.videoRotationAngle = 90
+                }
             }
 
             let processor = PhotoCaptureProcessor(aspectRatio: selectedRatio) { [weak self] result in
@@ -289,13 +290,13 @@ final class CameraSessionController: ObservableObject {
             throw CameraError.cannotAddVideoOutput
         }
         session.addOutput(frameOutput.captureOutput)
-        if let connection = frameOutput.captureOutput.connection(with: .video),
-           connection.isVideoRotationAngleSupported(90) {
-            connection.videoRotationAngle = 90
+        if let connection = frameOutput.captureOutput.connection(with: .video) {
+            if connection.isVideoRotationAngleSupported(90) {
+                connection.videoRotationAngle = 90
+            }
         }
         updateLensState(for: device)
     }
-
 }
 
 private enum CameraError: LocalizedError {
