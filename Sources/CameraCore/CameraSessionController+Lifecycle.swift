@@ -95,11 +95,14 @@ extension CameraSessionController {
     }
 
     func applyStabilization() {
+        let selectedConnection = if captureMode == .video {
+            movieOutput?.connection(with: .video)
+        } else {
+            frameOutput.captureOutput.connection(with: .video)
+        }
         guard
             let activeDevice,
-            let connection = captureMode == .video
-                ? movieOutput?.connection(with: .video)
-                : frameOutput.captureOutput.connection(with: .video)
+            let connection = selectedConnection
         else {
             Task { @MainActor in self.stabilizationResult = nil }
             return

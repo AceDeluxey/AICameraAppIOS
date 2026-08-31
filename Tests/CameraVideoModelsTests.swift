@@ -1,5 +1,5 @@
-import XCTest
 @testable import AICameraApp
+import XCTest
 
 final class CameraVideoModelsTests: XCTestCase {
     func testRecordingStatusBusyState() {
@@ -18,21 +18,21 @@ final class CameraVideoModelsTests: XCTestCase {
     }
 
     func testDurationFormatterUsesMinutesAndSeconds() {
-        let start = Date(timeIntervalSince1970: 1_000)
+        let start = Date(timeIntervalSince1970: 1000)
         let end = start.addingTimeInterval(125)
 
         XCTAssertEqual(VideoRecordingDurationFormatter.text(from: start, to: end), "02:05")
     }
 
     func testDurationFormatterAddsHoursWhenNeeded() {
-        let start = Date(timeIntervalSince1970: 1_000)
-        let end = start.addingTimeInterval(3_661)
+        let start = Date(timeIntervalSince1970: 1000)
+        let end = start.addingTimeInterval(3661)
 
         XCTAssertEqual(VideoRecordingDurationFormatter.text(from: start, to: end), "01:01:01")
     }
 
     func testDurationFormatterClampsNegativeIntervals() {
-        let start = Date(timeIntervalSince1970: 1_000)
+        let start = Date(timeIntervalSince1970: 1000)
         let end = start.addingTimeInterval(-5)
 
         XCTAssertEqual(VideoRecordingDurationFormatter.text(from: start, to: end), "00:00")

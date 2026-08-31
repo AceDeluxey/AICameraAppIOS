@@ -42,8 +42,8 @@ enum VideoRecordingStatus: Equatable, Sendable {
 enum VideoRecordingDurationFormatter {
     static func text(from startDate: Date, to endDate: Date) -> String {
         let duration = max(0, Int(endDate.timeIntervalSince(startDate)))
-        let hours = duration / 3_600
-        let minutes = (duration % 3_600) / 60
+        let hours = duration / 3600
+        let minutes = (duration % 3600) / 60
         let seconds = duration % 60
         if hours > 0 {
             return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
