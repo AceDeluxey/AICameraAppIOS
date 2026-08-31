@@ -41,5 +41,6 @@ jobs:
           -project AICameraApp.xcodeproj
           -scheme AICameraApp
           -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
+          -only-testing:AICameraAppTests
           CODE_SIGNING_ALLOWED=NO
           test

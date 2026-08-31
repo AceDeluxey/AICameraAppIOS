@@ -35,6 +35,7 @@ xcodebuild \
 ```
 
 CI 使用同一套生成和检查流程。若 CI 与本机结果不同，先核对 Xcode、XcodeGen、SwiftFormat 和 SwiftLint 版本。
+CI 默认只运行单元测试；UI 测试需要可控的模拟器权限状态或真机环境后再纳入阻断检查。
 
 ## 签名与安装到 iPhone
 
