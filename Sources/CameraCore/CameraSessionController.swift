@@ -19,6 +19,7 @@ final class CameraSessionController: ObservableObject {
 
     private let sessionQueue = DispatchQueue(label: "com.acedeluxey.aicamera.camera-session")
     private let capabilityProbe = CameraCapabilityProbe()
+    private let frameOutput = CameraFrameOutput()
     private var isConfigured = false
     private var activeDeviceID: String?
 
@@ -113,6 +114,11 @@ final class CameraSessionController: ObservableObject {
             throw CameraError.cannotAddPhotoOutput
         }
         session.addOutput(photoOutput)
+
+        guard session.canAddOutput(frameOutput.captureOutput) else {
+            throw CameraError.cannotAddVideoOutput
+        }
+        session.addOutput(frameOutput.captureOutput)
     }
 
     private func generateCapabilityReport() {
@@ -131,6 +137,7 @@ private enum CameraError: LocalizedError {
     case noBackCamera
     case cannotAddInput
     case cannotAddPhotoOutput
+    case cannotAddVideoOutput
 
     var errorDescription: String? {
         switch self {
@@ -140,6 +147,8 @@ private enum CameraError: LocalizedError {
             "无法连接相机输入"
         case .cannotAddPhotoOutput:
             "无法创建拍照输出"
+        case .cannotAddVideoOutput:
+            "无法创建视频帧分析输出"
         }
     }
 }
