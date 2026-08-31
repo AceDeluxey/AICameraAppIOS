@@ -101,7 +101,11 @@ final class BirdFocusPipelineTests: XCTestCase {
         )
 
         XCTAssertEqual(protected.focusDecision, .none)
-        XCTAssertEqual(released.focusDecision, .focus(at: CGPoint(x: 0.8, y: 0.5)))
+        guard case let .focus(point) = released.focusDecision else {
+            return XCTFail("Expected focus decision")
+        }
+        XCTAssertEqual(point.x, 0.8, accuracy: 0.0001)
+        XCTAssertEqual(point.y, 0.5, accuracy: 0.0001)
     }
 
     private func observation(originX: CGFloat = 0.4, confidence: Float) -> BirdObservation {
