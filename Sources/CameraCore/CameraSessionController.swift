@@ -101,56 +101,6 @@ final class CameraSessionController: ObservableObject {
     }
 
     @MainActor
-    func toggleAspectRatio() {
-        aspectRatio = aspectRatio == .fourByThree ? .sixteenByNine : .fourByThree
-    }
-
-    @MainActor
-    func capturePhoto() {
-        guard state == .running, captureStatus != .capturing else { return }
-        captureStatus = .capturing
-        let selectedRatio = aspectRatio
-        sessionQueue.async { [weak self] in
-            guard let self, let photoOutput else {
-                Task { @MainActor in
-                    self?.captureStatus = .failed("拍照输出尚未就绪")
-                }
-                return
-            }
-            let settings = AVCapturePhotoSettings(format: [
-                AVVideoCodecKey: AVVideoCodecType.jpeg,
-            ])
-            settings.photoQualityPrioritization = .quality
-            if let connection = photoOutput.connection(with: .video) {
-                if connection.isVideoRotationAngleSupported(90) {
-                    connection.videoRotationAngle = 90
-                }
-            }
-
-            let processor = PhotoCaptureProcessor(aspectRatio: selectedRatio) { [weak self] result in
-                self?.finishCapture(id: settings.uniqueID, result: result)
-            }
-            photoProcessors[settings.uniqueID] = processor
-            photoOutput.capturePhoto(with: settings, delegate: processor)
-        }
-    }
-
-    @MainActor
-    func selectLens(id: String) {
-        guard id != activeLensID else { return }
-        sessionQueue.async { [weak self] in
-            self?.switchLens(to: id)
-        }
-    }
-
-    @MainActor
-    func setZoomFactor(_ factor: CGFloat) {
-        sessionQueue.async { [weak self] in
-            self?.applyZoomFactor(factor)
-        }
-    }
-
-    @MainActor
     func focus(at devicePoint: CGPoint) {
         focusPoint = devicePoint
         let timestamp = CACurrentMediaTime()
@@ -201,13 +151,6 @@ final class CameraSessionController: ObservableObject {
                     self.birdModeStatus = .disabled
                 }
             }
-        }
-    }
-
-    @MainActor
-    func clearCaptureMessage() {
-        if captureStatus != .capturing {
-            captureStatus = .idle
         }
     }
 
