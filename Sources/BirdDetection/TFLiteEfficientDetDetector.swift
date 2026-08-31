@@ -162,47 +162,47 @@ private extension Data {
 }
 
 #if canImport(TensorFlowLite)
-import TensorFlowLite
+    import TensorFlowLite
 
-final class TensorFlowLiteEfficientDetRuntime: TFLiteEfficientDetRunning {
-    let inputDescriptor: TFLiteTensorDescriptor
-    let outputDescriptors: [TFLiteTensorDescriptor]
+    final class TensorFlowLiteEfficientDetRuntime: TFLiteEfficientDetRunning {
+        let inputDescriptor: TFLiteTensorDescriptor
+        let outputDescriptors: [TFLiteTensorDescriptor]
 
-    private let interpreter: Interpreter
+        private let interpreter: Interpreter
 
-    init(modelPath: String, threadCount: Int = 2) throws {
-        var options = Interpreter.Options()
-        options.threadCount = max(threadCount, 1)
-        let interpreter = try Interpreter(modelPath: modelPath, options: options)
-        try interpreter.allocateTensors()
-        self.interpreter = interpreter
-        inputDescriptor = try Self.descriptor(for: interpreter.input(at: 0))
-        outputDescriptors = try (0 ..< interpreter.outputTensorCount).map {
-            try Self.descriptor(for: interpreter.output(at: $0))
+        init(modelPath: String, threadCount: Int = 2) throws {
+            var options = Interpreter.Options()
+            options.threadCount = max(threadCount, 1)
+            let interpreter = try Interpreter(modelPath: modelPath, options: options)
+            try interpreter.allocateTensors()
+            self.interpreter = interpreter
+            inputDescriptor = try Self.descriptor(for: interpreter.input(at: 0))
+            outputDescriptors = try (0 ..< interpreter.outputTensorCount).map {
+                try Self.descriptor(for: interpreter.output(at: $0))
+            }
+        }
+
+        func invoke(input: Data) throws -> [Data] {
+            try interpreter.copy(input, toInputAt: 0)
+            try interpreter.invoke()
+            return try (0 ..< interpreter.outputTensorCount).map {
+                try interpreter.output(at: $0).data
+            }
+        }
+
+        private static func descriptor(for tensor: Tensor) throws -> TFLiteTensorDescriptor {
+            let dataType: TFLiteTensorDataType = switch tensor.dataType {
+            case .float32:
+                .float32
+            case .uInt8:
+                .uint8
+            default:
+                .unsupported(String(describing: tensor.dataType))
+            }
+            return TFLiteTensorDescriptor(
+                shape: tensor.shape.dimensions,
+                dataType: dataType
+            )
         }
     }
-
-    func invoke(input: Data) throws -> [Data] {
-        try interpreter.copy(input, toInputAt: 0)
-        try interpreter.invoke()
-        return try (0 ..< interpreter.outputTensorCount).map {
-            try interpreter.output(at: $0).data
-        }
-    }
-
-    private static func descriptor(for tensor: Tensor) throws -> TFLiteTensorDescriptor {
-        let dataType: TFLiteTensorDataType = switch tensor.dataType {
-        case .float32:
-            .float32
-        case .uInt8:
-            .uint8
-        default:
-            .unsupported(String(describing: tensor.dataType))
-        }
-        return TFLiteTensorDescriptor(
-            shape: tensor.shape.dimensions,
-            dataType: dataType
-        )
-    }
-}
 #endif
