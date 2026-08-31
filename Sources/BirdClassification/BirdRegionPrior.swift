@@ -105,7 +105,9 @@ final class BirdRegionPrior: BirdPriorWeighting, @unchecked Sendable {
                 let intersection = (previousPoint.x - currentPoint.x)
                     * (y - currentPoint.y) / (previousPoint.y - currentPoint.y)
                     + currentPoint.x
-                if x < intersection { inside.toggle() }
+                if x < intersection {
+                    inside.toggle()
+                }
             }
             previous = index
         }
@@ -172,7 +174,9 @@ private extension BirdRegionPrior {
         }
 
         for line in contents.split(whereSeparator: \.isNewline).map(String.init) {
-            if line == "v1" { continue }
+            if line == "v1" {
+                continue
+            }
             if line.hasPrefix("P|") {
                 finishRegion()
                 let fields = line.split(separator: "|", omittingEmptySubsequences: false)

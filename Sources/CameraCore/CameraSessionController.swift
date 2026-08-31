@@ -53,6 +53,7 @@ final class CameraSessionController: ObservableObject {
             UserDefaults.standard.set(includesLocationMetadata, forKey: Self.locationPreferenceKey)
         }
     }
+
     @Published var usesLocationForBirdRecognition: Bool {
         didSet {
             UserDefaults.standard.set(
