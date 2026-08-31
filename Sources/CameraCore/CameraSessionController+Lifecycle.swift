@@ -3,6 +3,23 @@ import Foundation
 import UIKit
 
 extension CameraSessionController {
+    @MainActor
+    func refreshCapabilities() {
+        generateCapabilityReport()
+        sessionQueue.async { [weak self] in
+            self?.applyStabilization()
+        }
+    }
+
+    @MainActor
+    func setStabilizationMode(_ mode: StabilizationModeSelection) {
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            requestedStabilizationMode = mode
+            applyStabilization()
+        }
+    }
+
     func observeSessionNotifications() {
         observeInterruptionNotifications()
         observeRuntimeErrorNotifications()

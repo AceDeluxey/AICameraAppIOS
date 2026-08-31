@@ -77,33 +77,12 @@ extension CameraSessionController {
     private func applyProfessionalControl(_ control: CameraProfessionalControl) {
         guard let activeDevice else { return }
         let capabilities = professionalCapabilities(for: activeDevice)
-        var settings = professionalSettings
-        switch control {
-        case let .exposureBias(value): settings.exposureBias = value
-        case let .iso(value): settings.iso = value
-        case let .exposureDuration(value): settings.exposureDuration = value
-        case let .lensPosition(value): settings.lensPosition = value
-        }
-        settings = settings.constrained(to: capabilities)
+        let settings = updatedSettings(for: control).constrained(to: capabilities)
 
         do {
             try activeDevice.lockForConfiguration()
             defer { activeDevice.unlockForConfiguration() }
-            switch control {
-            case .exposureBias:
-                guard capabilities.exposureBiasRange != nil else { return }
-                activeDevice.setExposureTargetBias(settings.exposureBias)
-            case .iso, .exposureDuration:
-                guard controlMode == .professional,
-                      capabilities.isoRange != nil,
-                      capabilities.exposureDurationRange != nil
-                else { return }
-                let duration = CMTime(seconds: settings.exposureDuration, preferredTimescale: 1_000_000_000)
-                activeDevice.setExposureModeCustom(duration: duration, iso: settings.iso)
-            case .lensPosition:
-                guard controlMode == .professional, capabilities.supportsManualFocus else { return }
-                activeDevice.setFocusModeLocked(lensPosition: settings.lensPosition)
-            }
+            guard apply(control, settings: settings, capabilities: capabilities, to: activeDevice) else { return }
             Task { @MainActor in
                 self.professionalSettings = settings
                 self.professionalStatus = .ready
@@ -111,6 +90,41 @@ extension CameraSessionController {
         } catch {
             publishProfessionalFailure("参数设置失败：\(error.localizedDescription)", device: activeDevice)
         }
+    }
+
+    private func updatedSettings(for control: CameraProfessionalControl) -> CameraProfessionalSettings {
+        var settings = professionalSettings
+        switch control {
+        case let .exposureBias(value): settings.exposureBias = value
+        case let .iso(value): settings.iso = value
+        case let .exposureDuration(value): settings.exposureDuration = value
+        case let .lensPosition(value): settings.lensPosition = value
+        }
+        return settings
+    }
+
+    private func apply(
+        _ control: CameraProfessionalControl,
+        settings: CameraProfessionalSettings,
+        capabilities: CameraProfessionalCapabilities,
+        to device: AVCaptureDevice
+    ) -> Bool {
+        switch control {
+        case .exposureBias:
+            guard capabilities.exposureBiasRange != nil else { return false }
+            device.setExposureTargetBias(settings.exposureBias)
+        case .iso, .exposureDuration:
+            guard controlMode == .professional,
+                  capabilities.isoRange != nil,
+                  capabilities.exposureDurationRange != nil
+            else { return false }
+            let duration = CMTime(seconds: settings.exposureDuration, preferredTimescale: 1_000_000_000)
+            device.setExposureModeCustom(duration: duration, iso: settings.iso)
+        case .lensPosition:
+            guard controlMode == .professional, capabilities.supportsManualFocus else { return false }
+            device.setFocusModeLocked(lensPosition: settings.lensPosition)
+        }
+        return true
     }
 
     private func applyProfessionalSettings(

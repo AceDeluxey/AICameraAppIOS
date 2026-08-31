@@ -188,23 +188,6 @@ final class CameraSessionController: ObservableObject {
         }
     }
 
-    @MainActor
-    func refreshCapabilities() {
-        generateCapabilityReport()
-        sessionQueue.async { [weak self] in
-            self?.applyStabilization()
-        }
-    }
-
-    @MainActor
-    func setStabilizationMode(_ mode: StabilizationModeSelection) {
-        sessionQueue.async { [weak self] in
-            guard let self else { return }
-            requestedStabilizationMode = mode
-            applyStabilization()
-        }
-    }
-
     private func configureAndStart() {
         sessionQueue.async { [weak self] in
             guard let self else { return }

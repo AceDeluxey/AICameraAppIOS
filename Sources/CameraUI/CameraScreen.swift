@@ -4,7 +4,7 @@ import UIKit
 
 struct CameraScreen: View {
     @Environment(\.scenePhase) private var scenePhase
-    @StateObject private var camera = CameraSessionController()
+    @StateObject var camera = CameraSessionController()
     @AppStorage("birdModeEnabled") private var birdModeEnabled = true
     @AppStorage("stabilizationEnabled") private var stabilizationEnabled = true
     @State private var showsDiagnostics = false
@@ -199,8 +199,7 @@ private extension CameraScreen {
         } else if case let .failed(message) = camera.professionalStatus {
             statusPill(message)
         } else if case let .unavailable(message) = camera.professionalStatus,
-                  camera.controlMode == .professional
-        {
+                  camera.controlMode == .professional {
             statusPill(message)
         } else {
             switch camera.state {
@@ -246,47 +245,6 @@ private extension CameraScreen {
 }
 
 private extension CameraScreen {
-    private var captureModePicker: some View {
-        VStack(spacing: 8) {
-            if camera.captureMode == .video, !camera.availableVideoFormats.isEmpty {
-                VideoFormatPicker(
-                    options: camera.availableVideoFormats,
-                    selectedOption: camera.selectedVideoFormat,
-                    isDisabled: camera.videoRecordingStatus.isBusy,
-                    selectOption: camera.selectVideoFormat
-                )
-            }
-            HStack(spacing: 8) {
-                CameraControlModePicker(
-                    selectedMode: camera.controlMode,
-                    supportsProfessionalMode: camera.professionalCapabilities?.supportsProfessionalMode == true,
-                    isDisabled: camera.videoRecordingStatus.isBusy,
-                    selectMode: camera.setControlMode
-                )
-                CaptureModePicker(
-                    selectedMode: camera.captureMode,
-                    isDisabled: camera.videoRecordingStatus.isBusy,
-                    selectMode: camera.setCaptureMode
-                )
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var professionalControls: some View {
-        if let capabilities = camera.professionalCapabilities,
-           capabilities.exposureBiasRange != nil || camera.controlMode == .professional
-        {
-            CameraProfessionalControls(
-                mode: camera.controlMode,
-                capabilities: capabilities,
-                settings: camera.professionalSettings,
-                isDisabled: camera.videoRecordingStatus.isBusy,
-                setControl: camera.setProfessionalControl
-            )
-        }
-    }
-
     @ViewBuilder
     private var lensControls: some View {
         if !camera.availableLenses.isEmpty {
