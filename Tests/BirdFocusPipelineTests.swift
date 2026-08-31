@@ -95,7 +95,7 @@ final class BirdFocusPipelineTests: XCTestCase {
             detectionDurationMilliseconds: 10
         )
         let released = await pipeline.process(
-            observations: [observation(x: 0.7, confidence: 0.8)],
+            observations: [observation(originX: 0.7, confidence: 0.8)],
             presentationTimeSeconds: 3,
             detectionDurationMilliseconds: 10
         )
@@ -104,9 +104,9 @@ final class BirdFocusPipelineTests: XCTestCase {
         XCTAssertEqual(released.focusDecision, .focus(at: CGPoint(x: 0.8, y: 0.5)))
     }
 
-    private func observation(x: CGFloat = 0.4, confidence: Float) -> BirdObservation {
+    private func observation(originX: CGFloat = 0.4, confidence: Float) -> BirdObservation {
         BirdObservation(
-            boundingBox: CGRect(x: x, y: 0.4, width: 0.2, height: 0.2),
+            boundingBox: CGRect(x: originX, y: 0.4, width: 0.2, height: 0.2),
             confidence: confidence
         )
     }
