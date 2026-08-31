@@ -1,0 +1,45 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: brew install xcodegen swiftformat swiftlint
+
+      - name: Check formatting
+        run: swiftformat --lint Sources Tests UITests
+
+      - name: Run SwiftLint
+        run: swiftlint lint --strict
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build
+        run: >-
+          xcodebuild
+          -project AICameraApp.xcodeproj
+          -scheme AICameraApp
+          -sdk iphonesimulator
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
+          build
+
+      - name: Run unit tests
+        run: >-
+          xcodebuild
+          -project AICameraApp.xcodeproj
+          -scheme AICameraApp
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
+          CODE_SIGNING_ALLOWED=NO
+          test

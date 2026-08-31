@@ -2,7 +2,7 @@
 
 > 对应 PRD：[`docs/PRD.md`](PRD.md)  
 > 更新日期：2026-08-31  
-> 当前阶段：M0 工程骨架（待开始）
+> 当前阶段：M0 工程骨架（进行中；等待 macOS CI 和真机验证）
 
 ## 使用规则
 
@@ -33,34 +33,34 @@
 
 ### M0.1 项目初始化
 
-- [ ] 使用 Swift 创建 iOS App 工程
-- [ ] 确定最低 iOS 版本，以现有测试机和目标用户覆盖率为依据
-- [ ] 设置正式 Bundle ID、版本号与显示名称
-- [ ] 建立 Debug、Release 配置
-- [ ] 配置相机、麦克风、定位和照片权限文案
-- [ ] 配置 `.gitignore`，确认签名文件与敏感配置不入库
-- [ ] 补充本地构建、真机安装和签名说明
+- [ ] 使用 Swift 创建 iOS App 工程（XcodeGen 定义和源码已完成，待 macOS 生成及编译）
+- [ ] 确定最低 iOS 版本，以现有测试机和目标用户覆盖率为依据（当前暂定 iOS 17）
+- [ ] 设置正式 Bundle ID、版本号与显示名称（当前暂定 `com.acedeluxey.aicamera`、0.1.0、AICameraApp）
+- [x] 建立 Debug、Release 配置
+- [x] 配置相机、麦克风、定位和照片权限文案
+- [x] 配置 `.gitignore`，确认签名文件与敏感配置不入库
+- [x] 补充本地构建、真机安装和签名说明
 
 ### M0.2 模块边界
 
-- [ ] 建立 `CameraCore`：会话、镜头、格式、照片、视频和权限
-- [ ] 建立 `BirdDetection`：检测模型、帧调度和性能降级
-- [ ] 建立 `BirdTracking`：主目标时域确认、框平滑和短时丢失恢复
-- [ ] 建立 `BirdFocus`：坐标映射、对焦节流和人工优先
-- [ ] 建立 `BirdClassification`：分类、标签和地理先验
-- [ ] 建立 `Stabilization`：能力探测与防抖模式
-- [ ] 建立 `CameraUI`：取景器、覆盖层和控制面板
-- [ ] 建立 `Diagnostics`：帧率、推理耗时、对焦事件和错误
-- [ ] 明确模块协议，禁止把全部状态集中到单个 ViewController
+- [x] 建立 `CameraCore`：会话、镜头、格式、照片、视频和权限
+- [x] 建立 `BirdDetection`：检测模型、帧调度和性能降级
+- [x] 建立 `BirdTracking`：主目标时域确认、框平滑和短时丢失恢复
+- [x] 建立 `BirdFocus`：坐标映射、对焦节流和人工优先
+- [x] 建立 `BirdClassification`：分类、标签和地理先验
+- [x] 建立 `Stabilization`：能力探测与防抖模式
+- [x] 建立 `CameraUI`：取景器、覆盖层和控制面板
+- [x] 建立 `Diagnostics`：帧率、推理耗时、对焦事件和错误
+- [x] 明确模块协议，禁止把全部状态集中到单个 ViewController
 
 ### M0.3 工程质量
 
-- [ ] 创建单元测试 Target
-- [ ] 创建 UI 测试 Target
-- [ ] 接入 Swift 格式化与静态检查
-- [ ] 配置 CI：编译、单元测试、静态检查
-- [ ] 加入基础日志，Release 默认不输出位置或媒体敏感数据
-- [ ] 在至少一台真机完成空项目安装和启动
+- [x] 创建单元测试 Target
+- [x] 创建 UI 测试 Target
+- [x] 接入 Swift 格式化与静态检查
+- [ ] 配置 CI：编译、单元测试、静态检查（工作流已创建，待首次 macOS 运行通过）
+- [x] 加入基础日志，Release 默认不输出位置或媒体敏感数据
+- [ ] 在至少一台真机完成空项目安装和启动 BLOCKED：当前服务器无 macOS/Xcode，需 Mac 和 iPhone
 
 完成标准：干净环境可构建；真机可启动；模块目录和测试框架可用；CI 通过。
 
