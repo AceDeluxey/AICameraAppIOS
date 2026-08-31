@@ -19,6 +19,7 @@ struct CaptureModePicker: View {
                     in: Capsule()
                 )
                 .accessibilityIdentifier("\(mode.rawValue)ModeButton")
+                .accessibilityValue(selectedMode == mode ? "已选择" : "未选择")
             }
         }
         .padding(3)
@@ -46,6 +47,7 @@ struct CameraControlModePicker: View {
                     )
                     .disabled(mode == .professional && !supportsProfessionalMode)
                     .accessibilityIdentifier("\(mode.rawValue)ControlModeButton")
+                    .accessibilityValue(selectedMode == mode ? "已选择" : "未选择")
             }
         }
         .padding(3)

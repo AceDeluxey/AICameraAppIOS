@@ -12,6 +12,21 @@ struct CameraScreen: View {
     @State private var compositionGrid = CompositionGrid.none
     @State private var manualFocusLocation: CGPoint?
     @State private var pinchStartZoom: CGFloat = 1
+    private let managesCameraLifecycle: Bool
+
+    init() {
+        let controller = CameraSessionController()
+        #if DEBUG
+            let testState = CameraUITestState(processArguments: ProcessInfo.processInfo.arguments)
+            if let state = testState.cameraState {
+                controller.state = state
+            }
+            managesCameraLifecycle = !testState.isEnabled
+        #else
+            managesCameraLifecycle = true
+        #endif
+        _camera = StateObject(wrappedValue: controller)
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -22,6 +37,7 @@ struct CameraScreen: View {
             }
         }
         .task {
+            guard managesCameraLifecycle else { return }
             await camera.start()
             camera.setBirdModeEnabled(birdModeEnabled)
             camera.setStabilizationMode(stabilizationEnabled ? .automatic : .off)
@@ -36,6 +52,7 @@ struct CameraScreen: View {
             camera.setUsesLocationForBirdRecognition(enabled)
         }
         .onChange(of: scenePhase) { _, phase in
+            guard managesCameraLifecycle else { return }
             if phase == .background {
                 camera.stop()
             } else if phase == .active {
@@ -68,6 +85,24 @@ struct CameraScreen: View {
         }
     }
 }
+
+#if DEBUG
+private struct CameraUITestState {
+    let isEnabled: Bool
+    let cameraState: CameraSessionController.State?
+
+    init(processArguments: [String]) {
+        isEnabled = processArguments.contains("--ui-testing")
+        if processArguments.contains("--camera-unauthorized") {
+            cameraState = .unauthorized
+        } else if isEnabled {
+            cameraState = .running
+        } else {
+            cameraState = nil
+        }
+    }
+}
+#endif
 
 private extension CameraScreen {
     private func preview(in size: CGSize) -> some View {
