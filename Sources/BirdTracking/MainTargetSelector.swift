@@ -73,11 +73,13 @@ struct MainTargetTracker: Sendable {
         }
 
         if selected.confidence >= configuration.strongConfidence {
-            if let confirmedObservation,
-               confirmedObservation.boundingBox.intersectionOverUnion(with: selected.boundingBox)
-               < configuration.minimumMatchIoU
-            {
-                reset()
+            if let confirmedObservation {
+                let matchIoU = confirmedObservation.boundingBox.intersectionOverUnion(
+                    with: selected.boundingBox
+                )
+                if matchIoU < configuration.minimumMatchIoU {
+                    reset()
+                }
             }
             return confirm(selected)
         }

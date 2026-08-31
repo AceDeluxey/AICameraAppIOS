@@ -34,9 +34,9 @@ final class MainTargetSelectorTests: XCTestCase {
 
     func testWeakObservationRequiresConsecutiveMatchingFrames() {
         var tracker = MainTargetTracker()
-        let first = makeObservation(x: 0.10, confidence: 0.4)
-        let second = makeObservation(x: 0.12, confidence: 0.45)
-        let third = makeObservation(x: 0.14, confidence: 0.5)
+        let first = makeObservation(minX: 0.10, confidence: 0.4)
+        let second = makeObservation(minX: 0.12, confidence: 0.45)
+        let third = makeObservation(minX: 0.14, confidence: 0.5)
 
         XCTAssertEqual(
             tracker.update(with: [first]).state,
@@ -54,8 +54,8 @@ final class MainTargetSelectorTests: XCTestCase {
 
     func testDifferentWeakTargetRestartsConfirmation() {
         var tracker = MainTargetTracker()
-        let first = makeObservation(x: 0.05, confidence: 0.4)
-        let different = makeObservation(x: 0.7, confidence: 0.5)
+        let first = makeObservation(minX: 0.05, confidence: 0.4)
+        let different = makeObservation(minX: 0.7, confidence: 0.5)
 
         _ = tracker.update(with: [first])
         let result = tracker.update(with: [different])
@@ -81,8 +81,8 @@ final class MainTargetSelectorTests: XCTestCase {
         let configuration = MainTargetTrackingConfiguration(smoothingFactor: 0.5)
         var tracker = MainTargetTracker(configuration: configuration)
 
-        _ = tracker.update(with: [makeObservation(x: 0.1, confidence: 0.8)])
-        let result = tracker.update(with: [makeObservation(x: 0.2, confidence: 0.8)])
+        _ = tracker.update(with: [makeObservation(minX: 0.1, confidence: 0.8)])
+        let result = tracker.update(with: [makeObservation(minX: 0.2, confidence: 0.8)])
         let box = try XCTUnwrap(result.observation?.boundingBox)
 
         XCTAssertEqual(box.minX, 0.15, accuracy: 0.0001)
@@ -91,8 +91,8 @@ final class MainTargetSelectorTests: XCTestCase {
 
     func testHighestConfidenceObservationDrivesTracker() throws {
         var tracker = MainTargetTracker()
-        let lower = makeObservation(x: 0.1, confidence: 0.7)
-        let higher = makeObservation(x: 0.5, confidence: 0.9)
+        let lower = makeObservation(minX: 0.1, confidence: 0.7)
+        let higher = makeObservation(minX: 0.5, confidence: 0.9)
 
         let result = tracker.update(with: [lower, higher])
 
@@ -101,8 +101,8 @@ final class MainTargetSelectorTests: XCTestCase {
 
     func testStrongDifferentTargetDoesNotSmoothAcrossTargets() throws {
         var tracker = MainTargetTracker()
-        _ = tracker.update(with: [makeObservation(x: 0.05, confidence: 0.8)])
-        let different = makeObservation(x: 0.55, confidence: 0.9)
+        _ = tracker.update(with: [makeObservation(minX: 0.05, confidence: 0.8)])
+        let different = makeObservation(minX: 0.55, confidence: 0.9)
 
         let result = tracker.update(with: [different])
 
@@ -110,14 +110,14 @@ final class MainTargetSelectorTests: XCTestCase {
     }
 
     private func makeObservation(
-        x: CGFloat = 0.1,
-        y: CGFloat = 0.1,
+        minX: CGFloat = 0.1,
+        minY: CGFloat = 0.1,
         width: CGFloat = 0.4,
         height: CGFloat = 0.4,
         confidence: Float
     ) -> BirdObservation {
         BirdObservation(
-            boundingBox: CGRect(x: x, y: y, width: width, height: height),
+            boundingBox: CGRect(x: minX, y: minY, width: width, height: height),
             confidence: confidence
         )
     }
