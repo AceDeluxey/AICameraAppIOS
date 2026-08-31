@@ -45,5 +45,6 @@
 - iOS 已实现与 Android 参数一致的输出解析、bird/cat 双阈值、NMS、单主目标裁决和转正框逆旋转映射；待转换模型接入后做逐样本校验。
 - iOS 已实现 Core ML 图像输入缩放、模型接口校验、推理输出读取与后处理适配；接口约定见 `COREML_MODEL_CONTRACT.md`。
 - 接入 iOS ONNX Runtime/TFLite 的备选实测。
+- TFLite 备选适配器、严格张量契约、RGB 输入和后处理复用已完成，接入说明见 `TFLITE_FALLBACK.md`；待 Mac 安装官方运行时并用现有模型验证。
 - 固定验证集与 Android/iOS 逐样本输出对照。
 - 真机统计端到端延迟、内存、功耗和温度。
