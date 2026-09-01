@@ -30,8 +30,8 @@ final class AICameraAppUITests: XCTestCase {
         let app = makeApp(cameraUnauthorized: true)
         app.launch()
 
-        let recoveryButton = app.descendants(matching: .any)["cameraPermissionSettingsButton"]
-        XCTAssertTrue(recoveryButton.waitForExistence(timeout: 5), app.debugDescription)
+        let permissionMessage = app.staticTexts["需要相机权限"]
+        XCTAssertTrue(permissionMessage.waitForExistence(timeout: 5), app.debugDescription)
         XCTAssertFalse(app.buttons["shutterButton"].isEnabled)
     }
 
