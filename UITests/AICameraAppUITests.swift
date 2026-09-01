@@ -3,10 +3,9 @@ import XCTest
 final class AICameraAppUITests: XCTestCase {
     private func makeApp(cameraUnauthorized: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing"]
-        if cameraUnauthorized {
-            app.launchArguments.append("--camera-unauthorized")
-        }
+        app.launchEnvironment["AICAMERA_UI_TEST_STATE"] = cameraUnauthorized
+            ? "unauthorized"
+            : "running"
         return app
     }
 
