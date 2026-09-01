@@ -30,6 +30,7 @@ struct CameraScreen: View {
                 Color.black.ignoresSafeArea()
                 preview(in: geometry.size)
                 chrome
+                permissionRecoveryOverlay
             }
         }
         .task {
@@ -224,10 +225,7 @@ private extension CameraScreen {
         } else {
             switch camera.state {
             case .unauthorized:
-                Button("请在系统设置中允许相机权限", action: openSettings)
-                    .accessibilityIdentifier("cameraPermissionSettingsButton")
-                    .padding(12)
-                    .background(CameraDesign.overlayBackground, in: Capsule())
+                EmptyView()
             case let .failed(message):
                 statusPill(message)
             default:
@@ -373,11 +371,6 @@ private extension CameraScreen {
         } else {
             camera.toggleVideoRecording()
         }
-    }
-
-    private func openSettings() {
-        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-        UIApplication.shared.open(url)
     }
 }
 
