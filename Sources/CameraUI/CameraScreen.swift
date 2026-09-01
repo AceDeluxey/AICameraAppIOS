@@ -16,7 +16,9 @@ struct CameraScreen: View {
 
     init() {
         let controller = CameraSessionController()
-        let testState = CameraUITestState(processEnvironment: ProcessInfo.processInfo.environment)
+        let testState = CameraUITestState(
+            requestedState: UserDefaults.standard.string(forKey: "AICAMERA_UI_TEST_STATE")
+        )
         if let state = testState.cameraState {
             controller.state = state
         }
