@@ -57,11 +57,16 @@ jobs:
           test
 
       - name: Run UI tests
-        run: >-
-          xcodebuild
-          -project AICameraApp.xcodeproj
-          -scheme AICameraApp
-          -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
-          -only-testing:AICameraAppUITests
-          CODE_SIGNING_ALLOWED=NO
-          test
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project AICameraApp.xcodeproj \
+            -scheme AICameraApp \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+            -only-testing:AICameraAppUITests \
+            CODE_SIGNING_ALLOWED=NO \
+            test 2>&1 | tee ui-tests.log || {
+              grep -E 'Test Case.*failed|Assertion Failure|UI Testing Failure|(^|:) error:' ui-tests.log |
+                while IFS= read -r line; do echo "::error::$line"; done
+              exit 1
+            }
