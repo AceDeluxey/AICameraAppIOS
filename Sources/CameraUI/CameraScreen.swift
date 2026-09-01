@@ -16,15 +16,11 @@ struct CameraScreen: View {
 
     init() {
         let controller = CameraSessionController()
-        #if DEBUG
-            let testState = CameraUITestState(processArguments: ProcessInfo.processInfo.arguments)
-            if let state = testState.cameraState {
-                controller.state = state
-            }
-            managesCameraLifecycle = !testState.isEnabled
-        #else
-            managesCameraLifecycle = true
-        #endif
+        let testState = CameraUITestState(processArguments: ProcessInfo.processInfo.arguments)
+        if let state = testState.cameraState {
+            controller.state = state
+        }
+        managesCameraLifecycle = !testState.isEnabled
         _camera = StateObject(wrappedValue: controller)
     }
 
@@ -231,6 +227,7 @@ private extension CameraScreen {
                 Button("请在系统设置中允许相机权限", action: openSettings)
                     .padding(12)
                     .background(CameraDesign.overlayBackground, in: Capsule())
+                    .accessibilityIdentifier("cameraPermissionSettingsButton")
             case let .failed(message):
                 statusPill(message)
             default:

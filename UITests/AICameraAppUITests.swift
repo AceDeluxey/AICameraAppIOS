@@ -31,7 +31,7 @@ final class AICameraAppUITests: XCTestCase {
         let app = makeApp(cameraUnauthorized: true)
         app.launch()
 
-        let recoveryButton = app.buttons["请在系统设置中允许相机权限"]
+        let recoveryButton = app.buttons["cameraPermissionSettingsButton"]
         XCTAssertTrue(recoveryButton.waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["shutterButton"].isEnabled)
     }
@@ -39,13 +39,16 @@ final class AICameraAppUITests: XCTestCase {
     func testBackgroundAndForegroundPreservePrimaryControls() {
         let app = makeApp()
         app.launch()
-        XCTAssertTrue(app.buttons["shutterButton"].waitForExistence(timeout: 5))
+        let videoButton = app.buttons["videoModeButton"]
+        XCTAssertTrue(videoButton.waitForExistence(timeout: 5))
+        videoButton.tap()
+        XCTAssertEqual(videoButton.value as? String, "已选择")
 
         XCUIDevice.shared.press(.home)
         app.activate()
 
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 5))
-        XCTAssertTrue(app.buttons["shutterButton"].isEnabled)
+        XCTAssertEqual(videoButton.value as? String, "已选择")
         XCTAssertTrue(app.buttons["birdModeButton"].exists)
     }
 
