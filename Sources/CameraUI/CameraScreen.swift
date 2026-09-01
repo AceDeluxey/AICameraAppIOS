@@ -4,7 +4,7 @@ import UIKit
 
 struct CameraScreen: View {
     @Environment(\.scenePhase) private var scenePhase
-    @StateObject var camera = CameraSessionController()
+    @StateObject var camera: CameraSessionController
     @AppStorage("birdModeEnabled") private var birdModeEnabled = true
     @AppStorage("stabilizationEnabled") private var stabilizationEnabled = true
     @State private var showsDiagnostics = false

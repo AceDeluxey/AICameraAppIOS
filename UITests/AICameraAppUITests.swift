@@ -32,7 +32,7 @@ final class AICameraAppUITests: XCTestCase {
         app.launch()
 
         let recoveryButton = app.descendants(matching: .any)["cameraPermissionSettingsButton"]
-        XCTAssertTrue(recoveryButton.waitForExistence(timeout: 5))
+        XCTAssertTrue(recoveryButton.waitForExistence(timeout: 5), app.debugDescription)
         XCTAssertFalse(app.buttons["shutterButton"].isEnabled)
     }
 
